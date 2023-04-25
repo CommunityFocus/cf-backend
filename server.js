@@ -14,6 +14,8 @@ const io = new Server(httpServer, {
   },
 });
 
+const timerStore = {};
+
 io.on("connection", (socket) => {
   console.log("a user connected");
 
@@ -54,3 +56,5 @@ httpServer.listen(PORT, () => {
 app.get("/", (req, res) => {
   res.status(200).json({ msg: "Hello World" });
 });
+
+module.exports = { timerStore };
