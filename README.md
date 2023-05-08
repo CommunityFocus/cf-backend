@@ -1,8 +1,9 @@
 # time-share-v2
-A sharable time tracking app for teams. 
+A sharable time tracking app for teams
 
 ## Getting Started
 
+## Stack
 
 ### Related repositories
 - [Time Share Backend] - https://github.com/nmpereira/time-share-v2
