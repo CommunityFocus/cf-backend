@@ -1,12 +1,24 @@
 const express = require("express");
 const app = express();
 const { createServer } = require("http");
+const morgan = require("morgan");
 
 const { Server } = require("socket.io");
 const { startCountdown } = require("./helpers/startTimer");
 const PORT = process.env.PORT || 4000;
 
-const httpServer = createServer(app);
+const httpServer = createServer(app, {
+  function(req, res) {
+    var done = finalhandler(req, res);
+    logger(req, res, function (err) {
+      if (err) return done(err);
+
+      // respond to request
+      res.setHeader("content-type", "text/plain");
+      res.end("hello, world!");
+    });
+  },
+});
 
 httpServer.listen(PORT, () => {
   console.log(
@@ -27,19 +39,16 @@ const io = new Server(httpServer, {
   },
 });
 
-// store the timers for each room
-const timerStore = {};
 /**
+ * Store the timers for each room
  * Example of timerStore object
  * {  roomName:{
  *    timer: setInterval(),
  *    users:[socket.id, socket.id, socket.id]]
  *    }
- *
- *
  * }
- *
  */
+const timerStore = {};
 
 // routes
 app.get("/", (req, res) => {
@@ -48,43 +57,51 @@ app.get("/", (req, res) => {
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
+  let roomName = socket.handshake.query.roomName;
+
+  // if there's no roomName property for this room, create one
+  if (!timerStore[roomName]) {
+    timerStore[roomName] = {};
+  }
+  // if there's no users array property for this room, create one
+  if (!timerStore[roomName]["users"]) {
+    console.log("resetting users");
+    timerStore[roomName].users = [];
+  }
+
+  // if there's no timer property for this room, create one
+  if (!timerStore[roomName].timer) {
+    timerStore[roomName].timer = null;
+  }
+
   socket.on("join", (roomName) => {
     // join the room
     socket.join(roomName);
-    socket.to(roomName).emit("userJoined");
+    socket.in(roomName).emit("userJoined");
 
-    
-
+    // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
-    socket.to(roomName).emit("userJoined", timerStore[roomName].users);
-    socket.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
+    io.to(roomName).emit("userJoined", timerStore[roomName].users);
+    io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
-    console.log(`User joined room ${roomName}`);
+    console.log(`User ${socket.id} joined room ${roomName}`);
   });
-  const roomName = Array.from(socket.rooms).filter((id) => id !== socket.id)[1] || '';
-  console.log(socket);
+
   console.log(
     `User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
   );
 
-  timerStore.hasOwnProperty(roomName) ? null : timerStore[roomName] = {};
-  timerStore[roomName].hasOwnProperty("timer") ? null : timerStore[roomName].timer = null;
-  timerStore[roomName].hasOwnProperty("users") ? null : timerStore[roomName].users = [];
-  
-  console.log({roomName, timerStore});
-
-
- 
-
   socket.on("disconnect", () => {
-    console.log(`User disconnected from room ${roomName}`);
-    timerStore[roomName].users = timerStore[roomName]?.users?.filter(
-      (id) => id !== socket.id
+    console.log(`User ${socket.id} disconnected from room ${roomName}`);
+
+    // remove the user from the room
+    timerStore[roomName].users = timerStore[roomName].users.filter(
+      (user) => user !== socket.id
     );
 
-    socket.to(roomName).emit("userLeft", timerStore[roomName].users);
-    socket.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
+    io.to(roomName).emit("userLeft", timerStore[roomName].users);
+    io.to(roomName).emit("usersInRoom", timerStore[roomName].users?.length);
 
     // leave the room
     socket.leave(roomName);
