@@ -1,4 +1,4 @@
-const generateId = ({ timerStore }) => {
+function generateId ({ timerStore }) {
   try {
     // create a random id that is 8 characters long and is alphanumeric. Split each 3 characters with a dash.
     const id = Math.floor((Math.random() + 1) * 1e40)
