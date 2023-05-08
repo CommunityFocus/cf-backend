@@ -1,24 +1,12 @@
 const express = require("express");
 const app = express();
+const PORT = process.env.PORT || 4000;
 const { createServer } = require("http");
-const morgan = require("morgan");
-
 const { Server } = require("socket.io");
 const { startCountdown } = require("./helpers/startTimer");
-const PORT = process.env.PORT || 4000;
+const { destroyTimer } = require("./helpers/destroyTimer");
 
-const httpServer = createServer(app, {
-  function(req, res) {
-    var done = finalhandler(req, res);
-    logger(req, res, function (err) {
-      if (err) return done(err);
-
-      // respond to request
-      res.setHeader("content-type", "text/plain");
-      res.end("hello, world!");
-    });
-  },
-});
+const httpServer = createServer(app);
 
 httpServer.listen(PORT, () => {
   console.log(
@@ -79,6 +67,12 @@ io.on("connection", (socket) => {
     socket.join(roomName);
     socket.in(roomName).emit("userJoined");
 
+    // if there is a destroy timer countdown, clear it
+    if (timerStore[roomName].destroyTimer) {
+      console.log("Clearing destroy timer for:", roomName);
+      clearInterval(timerStore[roomName].destroyTimer);
+    }
+
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
@@ -103,6 +97,17 @@ io.on("connection", (socket) => {
     io.to(roomName).emit("userLeft", timerStore[roomName].users);
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users?.length);
 
+    if (timerStore[roomName].users.length === 0) {
+      // if there are no users left in the room, clear the timer and delete the room after a delay
+      console.log("Setting destroyTimer instance to destroy timer instance for:", roomName);
+      timerStore[roomName].destroyTimer = setTimeout(
+        () => {
+          destroyTimer({ roomName, timerStore });
+        },
+        10000 // give the users 10 seconds to rejoin
+      );
+    }
+
     // leave the room
     socket.leave(roomName);
   });
@@ -114,34 +119,10 @@ io.on("connection", (socket) => {
   });
 
   // handle requests to pause a countdown
-  socket.on("pauseCountdown", (roomName) => {
-    // if there's a timer for this room, clear it and emit a message to the room
-    if (timerStore[roomName]) {
-      clearInterval(timerStore[roomName]);
-      io.to(roomName).emit("timerPaused");
-    }
-  });
+  socket.on("pauseCountdown", () => {});
 
   // handle requests to unpause a countdown
-  socket.on("unpauseCountdown", ({ roomName, remainingTime }) => {
-    // start a new timer with the remaining time and emit a message to the room
-    startCountdown({
-      roomName,
-      durationInSeconds: remainingTime,
-      io,
-      timerStore,
-    });
-    io.to(roomName).emit("timerUnpaused", remainingTime);
-  });
-
-  // handle requests to reset a countdown
-  socket.on("resetCountdown", (roomName) => {
-    // if there's a timer for this room, clear it and emit a message to the room
-    if (timerStore[roomName]) {
-      clearInterval(timerStore[roomName]);
-      io.to(roomName).emit("timerReset");
-    }
-  });
+  socket.on("unpauseCountdown", () => {});
 });
 
 module.exports = {
