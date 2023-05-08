@@ -1,8 +1,8 @@
 ## Description of the change
 
 
-### Fixes # (issue)
-- Issue #0
+### Fixes # (issue that will be closed by this PR)
+- Issue #
 
 ### Type of change
 
