@@ -29,6 +29,17 @@ const io = new Server(httpServer, {
 
 // store the timers for each room
 const timerStore = {};
+/**
+ * Example of timerStore object
+ * {  roomName:{
+ *    timer: setInterval(),
+ *    users:[socket.id, socket.id, socket.id]]
+ *    }
+ *
+ *
+ * }
+ *
+ */
 
 // routes
 app.get("/", (req, res) => {
@@ -37,22 +48,43 @@ app.get("/", (req, res) => {
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
-
-  const roomName = Array.from(socket.rooms).filter((id) => id !== socket.id)[1];
-  console.log(
-    `User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
-  );
-
   socket.on("join", (roomName) => {
     // join the room
     socket.join(roomName);
     socket.to(roomName).emit("userJoined");
 
+    
+
+    timerStore[roomName].users.push(socket.id);
+
+    socket.to(roomName).emit("userJoined", timerStore[roomName].users);
+    socket.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
+
     console.log(`User joined room ${roomName}`);
   });
+  const roomName = Array.from(socket.rooms).filter((id) => id !== socket.id)[1] || '';
+  console.log(socket);
+  console.log(
+    `User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
+  );
+
+  timerStore.hasOwnProperty(roomName) ? null : timerStore[roomName] = {};
+  timerStore[roomName].hasOwnProperty("timer") ? null : timerStore[roomName].timer = null;
+  timerStore[roomName].hasOwnProperty("users") ? null : timerStore[roomName].users = [];
+  
+  console.log({roomName, timerStore});
+
+
+ 
 
   socket.on("disconnect", () => {
     console.log(`User disconnected from room ${roomName}`);
+    timerStore[roomName].users = timerStore[roomName]?.users?.filter(
+      (id) => id !== socket.id
+    );
+
+    socket.to(roomName).emit("userLeft", timerStore[roomName].users);
+    socket.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
     // leave the room
     socket.leave(roomName);
