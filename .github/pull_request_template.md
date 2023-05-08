@@ -1,8 +1,7 @@
 ## Description of the change
 
-
-### Fixes # (issue)
-- Issue #0
+### Fixes # (issue that will be closed by this PR)
+- Issue #
 
 ### Type of change
 
@@ -28,3 +27,4 @@ Please delete options that are not relevant.
 - [ ] My changes generate no new warnings or errors
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] I have used the appropriate file structure to keep my code concise and readable. I have created a new file for helper funtions where possible
+
