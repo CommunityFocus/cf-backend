@@ -22,10 +22,9 @@ const io = new Server(httpServer, {
   cors: {
     // all origins
     origin: [
-      "http://localhost:3000",
       "http://127.0.0.1:5173",
+      "https://time-share-v2.netlify.app",
       "https://time-share-v2.netlify.app/",
-      "*",
     ],
     // allow all methods
     methods: ["GET", "POST"],
