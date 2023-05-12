@@ -21,7 +21,12 @@ httpServer.listen(PORT, () => {
 const io = new Server(httpServer, {
   cors: {
     // all origins
-    origin: ["http://localhost:3000", "http://127.0.0.1:5173", "*"],
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:5173",
+      "https://time-share-v2.netlify.app/",
+      "*",
+    ],
     // allow all methods
     methods: ["GET", "POST"],
   },
@@ -99,7 +104,10 @@ io.on("connection", (socket) => {
 
     if (timerStore[roomName].users.length === 0) {
       // if there are no users left in the room, clear the timer and delete the room after a delay
-      console.log("Setting destroyTimer instance to destroy timer instance for:", roomName);
+      console.log(
+        "Setting destroyTimer instance to destroy timer instance for:",
+        roomName
+      );
       timerStore[roomName].destroyTimer = setTimeout(
         () => {
           destroyTimer({ roomName, timerStore });
