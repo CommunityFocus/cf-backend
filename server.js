@@ -25,7 +25,7 @@ const io = new Server(httpServer, {
       "http://127.0.0.1:5173",
       "https://time-share-v2.netlify.app",
       "https://time-share-v2.netlify.app/",
-      "*",
+      "*:*",
     ],
     // allow all methods
     methods: ["GET", "POST"],
@@ -35,7 +35,7 @@ const io = new Server(httpServer, {
 /**
  * Store the timers for each room
  * Example of timerStore object
- * {  
+ * {
  * [roomName]:{
  *    timer: setInterval(),
  *    users:[socket.id, socket.id, socket.id]]
@@ -47,7 +47,11 @@ const timerStore = {};
 
 // routes
 app.get("/", (req, res) => {
-  res.status(200).json({ msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2" });
+  res
+    .status(200)
+    .json({
+      msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2",
+    });
 });
 
 // listen for socket.io connections and handle the countdown events
