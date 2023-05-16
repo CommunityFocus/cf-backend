@@ -19,8 +19,9 @@ httpServer.listen(PORT, () => {
 });
 
 const io = new Server(httpServer, {
-  origin: true,
-  credentials: true,
+  cors: {
+    origin: "*",
+  },
 });
 
 /**
