@@ -19,18 +19,8 @@ httpServer.listen(PORT, () => {
 });
 
 const io = new Server(httpServer, {
-  cors: {
-    // all origins
-    origin: [
-      "http://127.0.0.1:5173",
-      "https://time-share-v2.netlify.app",
-      "https://time-share-v2.netlify.app/",
-      "*.netlify.app",
-      "\*",
-    ],
-    // allow all methods
-    methods: ["GET", "POST"],
-  },
+  origin: true,
+  credentials: true,
 });
 
 /**
