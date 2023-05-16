@@ -34,9 +34,11 @@ const io = new Server(httpServer, {
 /**
  * Store the timers for each room
  * Example of timerStore object
- * {  roomName:{
+ * {  
+ * [roomName]:{
  *    timer: setInterval(),
  *    users:[socket.id, socket.id, socket.id]]
+ *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
  *    }
  * }
  */
@@ -44,11 +46,12 @@ const timerStore = {};
 
 // routes
 app.get("/", (req, res) => {
-  res.status(200).json({ msg: "Hello World" });
+  res.status(200).json({ msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2" });
 });
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
+  // get the room name from the query string. Example of roomName: "/:room"
   let roomName = socket.handshake.query.roomName;
 
   // if there's no roomName property for this room, create one
@@ -56,7 +59,7 @@ io.on("connection", (socket) => {
     timerStore[roomName] = {};
   }
   // if there's no users array property for this room, create one
-  if (!timerStore[roomName]["users"]) {
+  if (!timerStore[roomName].users) {
     console.log("resetting users");
     timerStore[roomName].users = [];
   }
@@ -79,7 +82,7 @@ io.on("connection", (socket) => {
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
-
+    // emit the updated number of users in the room
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
     console.log(`User ${socket.id} joined room ${roomName}`);
@@ -97,6 +100,7 @@ io.on("connection", (socket) => {
       (user) => user !== socket.id
     );
 
+    // emit the updated number of users in the room
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users?.length);
 
     if (timerStore[roomName].users.length === 0) {
