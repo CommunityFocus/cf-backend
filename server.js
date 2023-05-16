@@ -25,6 +25,7 @@ const io = new Server(httpServer, {
       "http://127.0.0.1:5173",
       "https://time-share-v2.netlify.app",
       "https://time-share-v2.netlify.app/",
+      "*",
     ],
     // allow all methods
     methods: ["GET", "POST"],
