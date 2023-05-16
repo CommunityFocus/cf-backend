@@ -69,7 +69,6 @@ io.on("connection", (socket) => {
   socket.on("join", (roomName) => {
     // join the room
     socket.join(roomName);
-    socket.in(roomName).emit("userJoined");
 
     // if there is a destroy timer countdown, clear it
     if (timerStore[roomName].destroyTimer) {
@@ -80,7 +79,7 @@ io.on("connection", (socket) => {
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
-    io.to(roomName).emit("userJoined", timerStore[roomName].users);
+
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
     console.log(`User ${socket.id} joined room ${roomName}`);
@@ -98,7 +97,6 @@ io.on("connection", (socket) => {
       (user) => user !== socket.id
     );
 
-    io.to(roomName).emit("userLeft", timerStore[roomName].users);
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users?.length);
 
     if (timerStore[roomName].users.length === 0) {
