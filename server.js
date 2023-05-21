@@ -51,29 +51,22 @@ io.on("connection", (socket) => {
 
   // if there's no roomName property for this room, create one
   if (!timerStore[roomName]) {
-    timerStore[roomName] = {};
+    timerStore[roomName] = {
+      users: [],
+      timer: null,
+    };
   }
-  // if there's no users array property for this room, create one
-  if (!timerStore[roomName].users) {
-    console.log("resetting users");
-    timerStore[roomName].users = [];
+  // if there is a destroy timer countdown, clear it
+  if (timerStore[roomName].destroyTimer) {
+    console.log("Clearing destroy timer for:", roomName);
+    clearInterval(timerStore[roomName].destroyTimer);
   }
-
-  // if there's no timer property for this room, create one
-  if (!timerStore[roomName].timer) {
-    timerStore[roomName].timer = null;
-  }
-
+  
   socket.on("join", (roomName) => {
     // join the room
     socket.join(roomName);
-
-    // if there is a destroy timer countdown, clear it
-    if (timerStore[roomName].destroyTimer) {
-      console.log("Clearing destroy timer for:", roomName);
-      clearInterval(timerStore[roomName].destroyTimer);
-    }
-
+    
+    
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
@@ -88,15 +81,14 @@ io.on("connection", (socket) => {
   );
 
   socket.on("disconnect", () => {
-    console.log(`User ${socket.id} disconnected from room ${roomName}`);
-
     // remove the user from the room
     timerStore[roomName].users = timerStore[roomName].users.filter(
       (user) => user !== socket.id
     );
+    console.log(`User ${socket.id} disconnected from room ${roomName}`);
 
     // emit the updated number of users in the room
-    io.to(roomName).emit("usersInRoom", timerStore[roomName].users?.length);
+    io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
     if (timerStore[roomName].users.length === 0) {
       // if there are no users left in the room, clear the timer and delete the room after a delay
