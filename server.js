@@ -56,17 +56,17 @@ io.on("connection", (socket) => {
       timer: null,
     };
   }
-
+  // if there is a destroy timer countdown, clear it
+  if (timerStore[roomName].destroyTimer) {
+    console.log("Clearing destroy timer for:", roomName);
+    clearInterval(timerStore[roomName].destroyTimer);
+  }
+  
   socket.on("join", (roomName) => {
     // join the room
     socket.join(roomName);
-
-    // if there is a destroy timer countdown, clear it
-    if (timerStore[roomName].destroyTimer) {
-      console.log("Clearing destroy timer for:", roomName);
-      clearInterval(timerStore[roomName].destroyTimer);
-    }
-
+    
+    
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
@@ -81,12 +81,11 @@ io.on("connection", (socket) => {
   );
 
   socket.on("disconnect", () => {
-    console.log(`User ${socket.id} disconnected from room ${roomName}`);
-
     // remove the user from the room
     timerStore[roomName].users = timerStore[roomName].users.filter(
       (user) => user !== socket.id
     );
+    console.log(`User ${socket.id} disconnected from room ${roomName}`);
 
     // emit the updated number of users in the room
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
