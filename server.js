@@ -51,17 +51,10 @@ io.on("connection", (socket) => {
 
   // if there's no roomName property for this room, create one
   if (!timerStore[roomName]) {
-    timerStore[roomName] = {};
-  }
-  // if there's no users array property for this room, create one
-  if (!timerStore[roomName].users) {
-    console.log("resetting users");
-    timerStore[roomName].users = [];
-  }
-
-  // if there's no timer property for this room, create one
-  if (!timerStore[roomName].timer) {
-    timerStore[roomName].timer = null;
+    timerStore[roomName] = {
+      users: [],
+      timer: null,
+    };
   }
 
   socket.on("join", (roomName) => {
@@ -96,7 +89,7 @@ io.on("connection", (socket) => {
     );
 
     // emit the updated number of users in the room
-    io.to(roomName).emit("usersInRoom", timerStore[roomName].users?.length);
+    io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
     if (timerStore[roomName].users.length === 0) {
       // if there are no users left in the room, clear the timer and delete the room after a delay
