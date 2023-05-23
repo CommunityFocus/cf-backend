@@ -5,9 +5,11 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { startCountdown } = require("./helpers/startTimer");
 const { destroyTimer } = require("./helpers/destroyTimer");
+// add cors did not work on my local machine without it
+const cors = require("cors");
 
 const httpServer = createServer(app);
-
+app.use(cors())
 httpServer.listen(PORT, () => {
   console.log(
     `Server is running on ${
@@ -43,6 +45,29 @@ app.get("/", (req, res) => {
     msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2",
   });
 });
+
+app.get("/randomid", (req, res) => {
+  
+  // return an random 8 character long route
+  function randomStrGen() {
+    let randomRoute = '';
+    const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 8; i++) {
+      randomRoute += charset.charAt(
+            Math.floor(Math.random() * charset.length),
+        );
+    }
+    return randomRoute
+}
+// Send a randomID as a response
+const randomID = randomStrGen()
+  res.status(200).json({
+    string: randomID,
+  });
+});
+
+// whitelist the local api request
+
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
