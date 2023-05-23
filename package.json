@@ -6,6 +6,7 @@
     "jest": "^29.5.0",
     "mongoose": "^7.0.4",
     "nodemon": "^2.0.22",
+    "random-word-slugs": "^0.1.7",
     "socket.io": "^4.6.1"
   },
   "scripts": {
