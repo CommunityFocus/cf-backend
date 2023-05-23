@@ -1,5 +1,5 @@
-# time-share-v2
-A sharable time tracking app for teams
+# cf-backend
+CommunityFocus is a sharable time tracking app for teams
 
 ## Getting Started
 To contibute:
@@ -13,5 +13,5 @@ To contibute:
 ## Stack
 
 ### Related repositories
-- [Time Share Backend] - https://github.com/nmpereira/time-share-v2
-- [Time Share Frontend] - https://github.com/nmpereira/time-share-v2-client
+- [CommunityFocus Backend] - https://github.com/CommunityFocus/cf-backend
+- [CommunityFocus Frontend] - https://github.com/CommunityFocus/cf-frontend
