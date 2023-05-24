@@ -10,14 +10,14 @@ const slugHandler = (req, res) => {
 	attempts in worst case scenario.
 	*/
 	while (existingStores.includes(slug)) {
-		slug = generateSlug();
-		retryAttempts++;
-
-		if (retryAttempts > 50) {
+		if (retryAttempts >= 50) {
 			return res.status(429).json({
 				message: "Issue generating slug, no available slugs found."
 			});
 		}
+
+		slug = generateSlug();
+		retryAttempts++;
 	}
 
 	res.json({

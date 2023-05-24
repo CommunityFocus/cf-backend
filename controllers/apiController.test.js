@@ -1,5 +1,4 @@
 const apiController = require("./apiController");
-// const slugHelper = require("../helpers/generateSlug");
 const { generateSlug } = require("../helpers/generateSlug");
 
 // Mocks
@@ -67,6 +66,11 @@ describe('apiController', () => {
 
 				await apiController.slugHandler(req, res);
 
+				/*
+					generateSlug is called 51 times - once for the initial slug
+					generation, and 50 retry attempts.
+				*/
+				expect(generateSlug).toBeCalledTimes(51);
 				expect(res.status).toBeCalledWith(429);
 				expect(res.json).toHaveBeenCalledWith({
 					message: 'Issue generating slug, no available slugs found.'
