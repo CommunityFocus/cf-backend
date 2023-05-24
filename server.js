@@ -82,7 +82,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     if (timerStore[roomName]) {
       // remove the user from the room
-      timerStore[roomName].users = timerStore[roomName]?.users.filter(
+      timerStore[roomName].users = timerStore[roomName].users.filter(
         (user) => user !== socket.id
       );
       console.log(`User ${socket.id} disconnected from room ${roomName}`);
