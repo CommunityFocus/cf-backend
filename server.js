@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
         () => {
           destroyTimer({ roomName, timerStore });
         },
-        10000 // give the users 10 seconds to rejoin
+        120000 // give the users 2 minutes to rejoin
       );
     }
 
