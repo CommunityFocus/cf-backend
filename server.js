@@ -64,12 +64,11 @@ io.on("connection", (socket) => {
     console.log("Clearing destroy timer for:", roomName);
     clearInterval(timerStore[roomName].destroyTimer);
   }
-  
+
   socket.on("join", (roomName) => {
     // join the room
     socket.join(roomName);
-    
-    
+
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
@@ -84,27 +83,29 @@ io.on("connection", (socket) => {
   );
 
   socket.on("disconnect", () => {
-    // remove the user from the room
-    timerStore[roomName].users = timerStore[roomName].users.filter(
-      (user) => user !== socket.id
-    );
-    console.log(`User ${socket.id} disconnected from room ${roomName}`);
-
-    // emit the updated number of users in the room
-    io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
-
-    if (timerStore[roomName].users.length === 0) {
-      // if there are no users left in the room, clear the timer and delete the room after a delay
-      console.log(
-        "Setting destroyTimer instance to destroy timer instance for:",
-        roomName
+    if (timerStore[roomName]) {
+      // remove the user from the room
+      timerStore[roomName].users = timerStore[roomName].users.filter(
+        (user) => user !== socket.id
       );
-      timerStore[roomName].destroyTimer = setTimeout(
-        () => {
-          destroyTimer({ roomName, timerStore });
-        },
-        120000 // give the users 2 minutes to rejoin
-      );
+      console.log(`User ${socket.id} disconnected from room ${roomName}`);
+
+      // emit the updated number of users in the room
+      io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
+
+      if (timerStore[roomName].users.length === 0) {
+        // if there are no users left in the room, clear the timer and delete the room after a delay
+        console.log(
+          "Setting destroyTimer instance to destroy timer instance for:",
+          roomName
+        );
+        timerStore[roomName].destroyTimer = setTimeout(
+          () => {
+            destroyTimer({ roomName, timerStore });
+          },
+          120000 // give the users 2 minutes to rejoin
+        );
+      }
     }
 
     // leave the room
