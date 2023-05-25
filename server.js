@@ -12,7 +12,12 @@ const cors = require('cors');
 
 
 // middleware
-app.use(cors);
+app.use(cors(
+  {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  }
+))
 
 httpServer.listen(PORT, () => {
   console.log(
