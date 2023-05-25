@@ -79,6 +79,7 @@ io.on("connection", (socket) => {
     // join the room
     socket.join(roomName);
 
+    if (timerStore[roomName]) {
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
@@ -86,6 +87,7 @@ io.on("connection", (socket) => {
     io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
     console.log(`User ${socket.id} joined room ${roomName}`);
+    }
   });
 
   console.log(
