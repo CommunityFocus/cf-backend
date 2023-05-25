@@ -8,6 +8,11 @@ const { destroyTimer } = require("./helpers/destroyTimer");
 const apiRoutes = require('./routes/apiRoutes');
 const { storeMiddleware } = require('./middleware/storeMiddleware');
 const httpServer = createServer(app);
+const cors = require('cors');
+
+
+// middleware
+app.use(cors);
 
 httpServer.listen(PORT, () => {
   console.log(
