@@ -5,7 +5,8 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { startCountdown } = require("./helpers/startTimer");
 const { destroyTimer } = require("./helpers/destroyTimer");
-
+const apiRoutes = require('./routes/apiRoutes');
+const { storeMiddleware } = require('./middleware/storeMiddleware');
 const httpServer = createServer(app);
 
 httpServer.listen(PORT, () => {
@@ -43,6 +44,8 @@ app.get("/", (req, res) => {
     msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2",
   });
 });
+
+app.use('/api/v1/', storeMiddleware(timerStore), apiRoutes);
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
