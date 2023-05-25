@@ -70,7 +70,7 @@ io.on("connection", (socket) => {
     };
   }
   // if there is a destroy timer countdown, clear it
-  if (timerStore[roomName].destroyTimer) {
+  if (timerStore[roomName].destroyTimer && roomName !=="default") {
     console.log("Clearing destroy timer for:", roomName);
     clearInterval(timerStore[roomName].destroyTimer);
   }
@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
     // join the room
     socket.join(roomName);
 
-    if (timerStore[roomName]) {
+    if (timerStore[roomName] && roomName !=="default") {
     // add the user to the room
     timerStore[roomName].users.push(socket.id);
 
@@ -95,7 +95,7 @@ io.on("connection", (socket) => {
   );
 
   socket.on("disconnect", () => {
-    if (timerStore[roomName]) {
+    if (timerStore[roomName] && roomName !=="default") {
       // remove the user from the room
       timerStore[roomName].users = timerStore[roomName].users.filter(
         (user) => user !== socket.id
@@ -127,7 +127,9 @@ io.on("connection", (socket) => {
   // handle requests to start a countdown
   socket.on("startCountdown", ({ roomName, durationInSeconds }) => {
     console.log({ roomName, durationInSeconds });
+    if (roomName !== "default") {
     startCountdown({ roomName, durationInSeconds, io, timerStore });
+    }
   });
 
   // handle requests to pause a countdown
