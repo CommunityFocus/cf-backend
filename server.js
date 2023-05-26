@@ -4,20 +4,22 @@ const PORT = process.env.PORT || 4000;
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { startCountdown } = require("./helpers/startTimer");
+const { timerRequest } = require("./helpers/timerRequest");
+
 const { destroyTimer } = require("./helpers/destroyTimer");
-const apiRoutes = require('./routes/apiRoutes');
-const { storeMiddleware } = require('./middleware/storeMiddleware');
+const apiRoutes = require("./routes/apiRoutes");
+const { storeMiddleware } = require("./middleware/storeMiddleware");
 const httpServer = createServer(app);
-const cors = require('cors');
+const cors = require("cors");
 
 
 // middleware
-app.use(cors(
-  {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  }
-))
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 
 httpServer.listen(PORT, () => {
   console.log(
@@ -42,6 +44,8 @@ const io = new Server(httpServer, {
  * [roomName]:{
  *    timer: setInterval(),
  *    users:[socket.id, socket.id, socket.id]]
+ *    secondsRemaining: number,
+ *    isPaused: boolean,
  *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
  *    }
  * }
@@ -55,7 +59,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use('/api/v1/', storeMiddleware(timerStore), apiRoutes);
+app.use("/api/v1/", storeMiddleware(timerStore), apiRoutes);
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
@@ -67,10 +71,14 @@ io.on("connection", (socket) => {
     timerStore[roomName] = {
       users: [],
       timer: null,
+      secondsRemaining: 0,
+      isPaused: false,
     };
   }
+  // console.log("timerStore", timerStore);
+
   // if there is a destroy timer countdown, clear it
-  if (timerStore[roomName].destroyTimer && roomName !=="default") {
+  if (timerStore[roomName].destroyTimer && roomName !== "default") {
     console.log("Clearing destroy timer for:", roomName);
     clearInterval(timerStore[roomName].destroyTimer);
   }
@@ -79,14 +87,14 @@ io.on("connection", (socket) => {
     // join the room
     socket.join(roomName);
 
-    if (timerStore[roomName] && roomName !=="default") {
-    // add the user to the room
-    timerStore[roomName].users.push(socket.id);
+    if (timerStore[roomName] && roomName !== "default") {
+      // add the user to the room
+      timerStore[roomName].users.push(socket.id);
 
-    // emit the updated number of users in the room
-    io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
+      // emit the updated number of users in the room
+      io.to(roomName).emit("usersInRoom", timerStore[roomName].users.length);
 
-    console.log(`User ${socket.id} joined room ${roomName}`);
+      console.log(`User ${socket.id} joined room ${roomName}`);
     }
   });
 
@@ -95,7 +103,7 @@ io.on("connection", (socket) => {
   );
 
   socket.on("disconnect", () => {
-    if (timerStore[roomName] && roomName !=="default") {
+    if (timerStore[roomName] && roomName !== "default") {
       // remove the user from the room
       timerStore[roomName].users = timerStore[roomName].users.filter(
         (user) => user !== socket.id
@@ -128,8 +136,12 @@ io.on("connection", (socket) => {
   socket.on("startCountdown", ({ roomName, durationInSeconds }) => {
     console.log({ roomName, durationInSeconds });
     if (roomName !== "default") {
-    startCountdown({ roomName, durationInSeconds, io, timerStore });
+      startCountdown({ roomName, durationInSeconds, io, timerStore });
     }
+  });
+
+  socket.on("timerRequest", ({ roomName }) => {
+    timerRequest({ roomName, io, timerStore, socket });
   });
 
   // handle requests to pause a countdown
