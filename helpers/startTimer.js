@@ -27,7 +27,6 @@ function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
       // update the remainingTime in the timerStore
       timerStore[roomName].secondsRemaining = remainingTime;
     }
-    // console.log({ roomName, remainingTime, timerSecondsRemaining: timerStore[roomName].secondsRemaining });
   }, 1000);
   io.to(roomName).emit("timerResponse", {
     secondsRemaining: remainingTime,
