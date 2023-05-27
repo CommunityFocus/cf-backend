@@ -141,7 +141,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("timerRequest", ({ roomName }) => {
-    timerRequest({ roomName, io, timerStore, socket });
+    timerRequest({ roomName, timerStore, socket });
   });
 
   // handle requests to pause a countdown
