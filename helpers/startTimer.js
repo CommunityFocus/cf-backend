@@ -29,6 +29,10 @@ function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
     }
     // console.log({ roomName, remainingTime, timerSecondsRemaining: timerStore[roomName].secondsRemaining });
   }, 1000);
+  io.to(roomName).emit("timerResponse", {
+    secondsRemaining: remainingTime,
+    isPaused: false,
+  });
 }
 
 module.exports = { startCountdown };
