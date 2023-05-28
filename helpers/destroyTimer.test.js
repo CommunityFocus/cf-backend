@@ -37,7 +37,7 @@ describe("destroyTimer", () => {
     let timerStore;
     beforeEach(() => {
       clearIntervalSpy = jest.spyOn(global, "clearInterval");
-      consoleLogSpy = jest.spyOn(console, "log");
+      consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
       roomName = "room-3";
 
       mockTimer = setInterval(() => {}, 1000);
