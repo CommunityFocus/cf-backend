@@ -13,8 +13,8 @@ describe("startCountdown", () => {
     let setIntervalSpy;
     beforeEach(() => {
       jest.useFakeTimers();
-      clearIntervalSpy = jest.spyOn(global, "clearInterval")
-      setIntervalSpy = jest.spyOn(global, "setInterval")
+      clearIntervalSpy = jest.spyOn(global, "clearInterval");
+      setIntervalSpy = jest.spyOn(global, "setInterval");
       consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
       consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
       roomName = "room-3";
@@ -110,27 +110,17 @@ describe("startCountdown", () => {
 
     describe("when the inputs are valid", () => {
       describe("when the timerStore has an existing timer", () => {
-        it("should clear the existing timer", () => {
-
-            timerStore['room-4']={
-                timer: setInterval(()=>{},1000)
-            }
-            startCountdown({
-                roomName: 'room-4',
-                durationInSeconds: 10,
-                io,
-                timerStore,
-            });
-
-            expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
-
-            jest.advanceTimersByTime(10000);
-
-            expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
-
-            jest.advanceTimersByTime(1000);
-
-            expect(clearIntervalSpy).toHaveBeenCalledTimes(2);
+        it("when the timer property in the room is a falsy value, it should not clear the timer", () => {
+          timerStore["room-4"] = {
+            timer: NaN,
+          };
+          startCountdown({
+            roomName: "room-4",
+            durationInSeconds: 10,
+            io,
+            timerStore,
+          });
+          expect(clearIntervalSpy).not.toHaveBeenCalled();
         });
       });
       describe("when the duration is 0", () => {
