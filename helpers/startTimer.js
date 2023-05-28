@@ -6,9 +6,9 @@ function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
   }
 
   if (
-    !durationInSeconds ||
-    typeof durationInSeconds !== "number" ||
-    durationInSeconds < 0
+    durationInSeconds === null ||
+    durationInSeconds === undefined ||
+    typeof durationInSeconds !== "number"
   ) {
     console.error(
       `Duration ${durationInSeconds} is not valid. Failed to start timer`
@@ -30,7 +30,7 @@ function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
     durationInSeconds);
 
   timerStore[roomName].timer = setInterval(() => {
-    if (remainingTime <= 0) {
+    if (timerStore[roomName].secondsRemaining <= 0) {
       clearInterval(timerStore[roomName].timer);
       timerStore[roomName].secondsRemaining = 0;
     } else {
