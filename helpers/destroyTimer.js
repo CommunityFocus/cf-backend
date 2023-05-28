@@ -1,12 +1,13 @@
 function destroyTimer({ roomName, timerStore }) {
-  console.log(
-    `KABOOM: Destroying timer for room ${roomName} due to inactivity`
-  );
-
-  // if there's a timer for this room, clear it
-  if (timerStore[roomName]) {
+  if (!roomName || !timerStore || !timerStore[roomName]) {
+    console.error(`Room ${roomName} does not exist. Failed to destroy timer`);
+  } else {
     clearInterval(timerStore[roomName].timer);
     delete timerStore[roomName];
+
+    console.log(
+      `KABOOM: Destroying timer for room ${roomName} due to inactivity`
+    );
   }
 }
 
