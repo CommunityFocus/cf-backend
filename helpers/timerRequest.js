@@ -21,8 +21,7 @@ const timerRequest = ({ timerStore, roomName, socket }) => {
     return;
   }
 
-  let currentSecondsRemaining = timerStore[roomName].secondsRemaining;
-
+  const currentSecondsRemaining = timerStore[roomName].secondsRemaining;
   // Function to check if secondsRemaining has changed
   const hasSecondsRemainingChanged = () => {
     return timerStore[roomName].secondsRemaining !== currentSecondsRemaining;
@@ -30,17 +29,15 @@ const timerRequest = ({ timerStore, roomName, socket }) => {
 
   // Emit 'timerResponse' event when secondsRemaining ticks down
   const emitTimerResponse = () => {
-    currentSecondsRemaining = timerStore[roomName].secondsRemaining;
     socket.emit("timerResponse", {
-      secondsRemaining: currentSecondsRemaining,
+      secondsRemaining: timerStore[roomName].secondsRemaining,
       isPaused: timerStore[roomName].isPaused,
     });
     clearInterval(updateChecker);
-    return;
+ 
   };
 
-  // Check for updates and emit 'timerResponse' every second
-
+  // Check for updates and emit 'timerResponse' every millisecond
   const updateChecker = setInterval(() => {
     if (hasSecondsRemainingChanged()) {
       emitTimerResponse();
