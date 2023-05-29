@@ -1,4 +1,3 @@
-// define the function that will handle the countdown for a room
 function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to start timer`);
