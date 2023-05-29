@@ -1,4 +1,3 @@
-const { set } = require("mongoose");
 const { startCountdown } = require("./startTimer");
 
 describe("startCountdown", () => {
