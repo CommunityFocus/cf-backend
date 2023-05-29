@@ -17,7 +17,9 @@
     "dev:skip-tests": "npx tsc && concurrently \"npx tsc --watch --project tsconfig.skip-tests.json\" \"nodemon dist/server.js\"",
     "test": "jest --watchAll --verbose --coverage",
     "test:ci": "jest --ci --verbose --coverage",
-    "build:package": "rm -rf node_modules && rm package-lock.json && npm i"
+    "build:package": "rm -rf node_modules && rm package-lock.json && npm i",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "format": "npx prettier --write"
   },
   "name": "time-share-v2",
   "description": "",
@@ -42,6 +44,14 @@
     "concurrently": "^8.0.1",
     "socket.io-client": "^4.6.1",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "eslint": "^8.41.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "prettier": "^2.8.8"
   }
 }
