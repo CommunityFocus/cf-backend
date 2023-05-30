@@ -1,4 +1,4 @@
-export interface ITimerStore {
+export interface TimerStore {
   [key: string]: {
     users: string[];
     timer: NodeJS.Timeout | undefined;
@@ -7,6 +7,3 @@ export interface ITimerStore {
     destroyTimer?: NodeJS.Timeout;
   };
 }
-
-
-

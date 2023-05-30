@@ -1,6 +1,6 @@
-import { ITimerStore } from "@common/types/types";
+import { TimerStore } from "@common/types/types";
 
-const timerRequest = ({ timerStore, roomName, socket }:{ timerStore:ITimerStore, roomName:string, socket }) => {
+const timerRequest = ({ timerStore, roomName, socket }:{ timerStore:TimerStore, roomName:string, socket }) => {
   if (!timerStore[roomName]) {
     console.error("timerStore[roomName] is undefined | null");
     return;

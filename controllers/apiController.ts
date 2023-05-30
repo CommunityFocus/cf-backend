@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { generateSlug } from "@helpers/generateSlug";
 import { RequestWithTimerStore } from "@common/types/express/types";
 
-export const slugHandler = (req: RequestWithTimerStore, res: Response) => {
+// export const slugHandler = (req: RequestWithTimerStore, res: Response) => {
+export const slugHandler = (req: Request, res: Response) => {
   let slug = generateSlug();
   const existingStores = Object.keys(req.timerStore);
   let retryAttempts = 0;
@@ -26,3 +27,4 @@ export const slugHandler = (req: RequestWithTimerStore, res: Response) => {
     slug,
   });
 };
+

@@ -2,24 +2,26 @@ import express from "express";
 import { Server } from "socket.io";
 import { startCountdown } from "@helpers/startTimer";
 import { timerRequest } from "@helpers/timerRequest";
-import { destroyTimer } from "./helpers/destroyTimer"
+import { destroyTimer } from "./helpers/destroyTimer";
 import apiRoutes from "@routes/apiRoutes";
 import { storeMiddleware } from "@middleware/storeMiddleware";
 import http, { createServer } from "http";
 import https from "https";
 import cors from "cors";
-import { ITimerStore } from "@common/types/types";
+import { TimerStore } from "@common/types/types";
 import { Request, Response } from "express";
 import {
   ClientToServerEvents,
-  ServerToClientEvents,
   InterServerEvents,
+  ServerToClientEvents,
   SocketData,
+  StartCountdownArgs,
 } from "@common/types/socket/types";
+import { Client } from "socket.io/dist/client";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const httpServer = createServer(app)
+const httpServer = createServer(app);
 
 // middleware
 app.use(
@@ -40,8 +42,8 @@ httpServer.listen(PORT, () => {
 });
 
 const io = new Server<
-  ServerToClientEvents,
   ClientToServerEvents,
+  ServerToClientEvents,
   InterServerEvents,
   SocketData
 >(httpServer, {
@@ -63,7 +65,7 @@ const io = new Server<
  *    }
  * }
  */
-const timerStore: ITimerStore = {};
+const timerStore: TimerStore = {};
 
 // routes
 app.get("/", (req: Request, res: Response) => {
@@ -73,6 +75,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/", storeMiddleware(timerStore), apiRoutes);
+
 
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
@@ -148,13 +151,7 @@ io.on("connection", (socket) => {
   // handle requests to start a countdown
   socket.on(
     "startCountdown",
-    ({
-      roomName,
-      durationInSeconds,
-    }: {
-      roomName: string;
-      durationInSeconds: number;
-    }) => {
+    ({ roomName, durationInSeconds }: StartCountdownArgs) => {
       console.log({ roomName, durationInSeconds });
       if (roomName !== "default") {
         startCountdown({ roomName, durationInSeconds, io, timerStore });

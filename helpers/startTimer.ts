@@ -1,6 +1,6 @@
-import { ITimerStore } from "@common/types/types";
+import { TimerStore } from "@common/types/types";
 
-function startCountdown({ roomName, durationInSeconds, io, timerStore }:{ roomName:string, durationInSeconds:number, io, timerStore:ITimerStore }) {
+function startCountdown({ roomName, durationInSeconds, io, timerStore }:{ roomName:string, durationInSeconds:number, io, timerStore:TimerStore }) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to start timer`);
     return;

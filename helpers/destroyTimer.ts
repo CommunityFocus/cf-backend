@@ -1,11 +1,11 @@
-import { ITimerStore } from "@common/types/types";
+import { TimerStore } from "@common/types/types";
 
-interface DestroyTimer {
+export interface DestroyTimerArgs {
   roomName: string,
-  timerStore: ITimerStore,
+  timerStore: TimerStore,
 };
 
-function destroyTimer({ roomName, timerStore }: DestroyTimer) {
+function destroyTimer({ roomName, timerStore }: DestroyTimerArgs) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to destroy timer`);
   } else {

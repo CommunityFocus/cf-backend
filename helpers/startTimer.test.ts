@@ -1,4 +1,4 @@
-import { ITimerStore } from "@common/types/types";
+import { TimerStore } from "@common/types/types";
 import { startCountdown } from "@helpers/startTimer";
 
 describe("startCountdown", () => {
@@ -8,7 +8,7 @@ describe("startCountdown", () => {
     let consoleErrorSpy: jest.SpyInstance;
     let roomName: string;
     let mockTimer: NodeJS.Timeout;
-    let timerStore: Partial<ITimerStore>;
+    let timerStore: Partial<TimerStore>;
     let io: { emit: any; to: any}
     let setIntervalSpy: jest.SpyInstance;
     beforeEach(() => {

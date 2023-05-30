@@ -86,7 +86,8 @@ describe('apiController', () => {
 				}
 				generateSlugMock.mockReturnValue('test');
 
-				await slugHandler(req as RequestWithTimerStore, res as Response);
+				// await slugHandler(req as RequestWithTimerStore, res as Response);
+				await slugHandler(req as Request, res as Response);
 
 				/*
 					generateSlug is called 51 times - once for the initial slug

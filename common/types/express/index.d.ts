@@ -1,9 +1,9 @@
-// declare global {
-// 	namespace Express {
-// 		export interface Request {
-// 			timerStore?: ITimerStore,
-// 		}
-// 	}
-// }
+declare global {
+	namespace Express {
+		export interface Request {
+			timerStore?: TimerStore,
+		}
+	}
+}
 
-// export {}
+export {}
