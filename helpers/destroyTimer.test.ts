@@ -40,7 +40,7 @@ describe("destroyTimer", () => {
       consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
       roomName = "room-3";
 
-      mockTimer = setInterval(() => {}, 1000);
+      mockTimer = setInterval(() => {}, 1000); // TODO: fix this to mock instead
       timerStore = {
         [roomName]: {
           timer: mockTimer,

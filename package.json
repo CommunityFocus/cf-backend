@@ -12,8 +12,8 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/server.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon dist/server.js\"",
-    "dev:skip-tests": "concurrently \"npx tsc --watch --project tsconfig.skip-tests.json\" \"nodemon dist/server.js\"",
+    "dev": "npx tsc && concurrently \"npx tsc --watch\" \"nodemon dist/server.js\"",
+    "dev:skip-tests": "npx tsc && concurrently \"npx tsc --watch --project tsconfig.skip-tests.json\" \"nodemon dist/server.js\"",
     "test": "jest --watch --verbose --coverage",
     "test:ci": "jest --ci --verbose --coverage"
   },
