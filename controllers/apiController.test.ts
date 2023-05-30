@@ -5,7 +5,7 @@ import { Response } from "express";
 import { slugHandler } from "./apiController";
 
 // Mocks
-jest.mock('@helpers/generateSlug')
+jest.mock('../helpers/generateSlug')
 const generateSlugMock = jest.mocked(generateSlug, { shallow: true });
 
 describe('apiController', () => {

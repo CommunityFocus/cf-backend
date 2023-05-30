@@ -1,22 +1,21 @@
-import { TimerStore } from "@common/types/types";
-import { startCountdown } from "@helpers/startTimer";
+import { startCountdown } from "../helpers/startTimer";
+import { ioTestType, timerStoreTestType } from "../common/types/test/types";
 
 describe("startCountdown", () => {
   describe("when startCountdown is called", () => {
     let clearIntervalSpy: jest.SpyInstance;
-    let consoleLogSpy: jest.SpyInstance;
     let consoleErrorSpy: jest.SpyInstance;
     let roomName: string;
-    let mockTimer: NodeJS.Timeout;
-    let timerStore: Partial<TimerStore>;
-    let io: { emit: any; to: any}
+    let mockTimer: jest.Mock<any, any, any>;
+    let timerStore: timerStoreTestType;
+    let io: ioTestType;
     let setIntervalSpy: jest.SpyInstance;
+
     beforeEach(() => {
       jest.useFakeTimers();
       clearIntervalSpy = jest.spyOn(global, "clearInterval");
       setIntervalSpy = jest.spyOn(global, "setInterval");
       consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-      consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
       roomName = "room-3";
       io = {
         to: jest.fn().mockReturnThis(),
@@ -40,10 +39,10 @@ describe("startCountdown", () => {
       describe("when the roomName is not valid", () => {
         it("should log an error", () => {
           startCountdown({
-            roomName: null,
+            roomName: null as any,
             durationInSeconds: 10,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(consoleErrorSpy).toHaveBeenCalledWith(
             `Room ${null} does not exist. Failed to start timer`
@@ -52,10 +51,10 @@ describe("startCountdown", () => {
 
         it("should not emit a timerResponse event to the room", () => {
           startCountdown({
-            roomName: null,
+            roomName: null as any,
             durationInSeconds: 10,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(io.emit).not.toHaveBeenCalled();
         });
@@ -64,9 +63,9 @@ describe("startCountdown", () => {
         it("should log an error", () => {
           startCountdown({
             roomName,
-            durationInSeconds: null,
-            io,
-            timerStore,
+            durationInSeconds: null as any,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(consoleErrorSpy).toHaveBeenCalledWith(
             `Duration ${null} is not valid. Failed to start timer`
@@ -76,9 +75,9 @@ describe("startCountdown", () => {
         it("should not emit a timerResponse event to the room", () => {
           startCountdown({
             roomName,
-            durationInSeconds: null,
-            io,
-            timerStore,
+            durationInSeconds: null as any,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(io.emit).not.toHaveBeenCalled();
         });
@@ -88,8 +87,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 10,
-            io: null,
-            timerStore,
+            io: null as any,
+            timerStore: timerStore as any,
           });
           expect(consoleErrorSpy).toHaveBeenCalledWith(
             `Socket.io instance is not valid. Failed to start timer`
@@ -100,8 +99,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 10,
-            io: null,
-            timerStore,
+            io: null as any,
+            timerStore: timerStore as any,
           });
           expect(io.emit).not.toHaveBeenCalled();
         });
@@ -112,13 +111,13 @@ describe("startCountdown", () => {
       describe("when the timerStore has an existing timer", () => {
         it("when the timer property in the room is a falsy value, it should not clear the timer", () => {
           timerStore["room-4"] = {
-            timer: NaN,
+            timer: NaN as any,
           };
           startCountdown({
             roomName: "room-4",
             durationInSeconds: 10,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(clearIntervalSpy).not.toHaveBeenCalled();
         });
@@ -128,8 +127,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 0,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(clearIntervalSpy).toHaveBeenCalledWith(mockTimer);
         });
@@ -138,8 +137,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 0,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(timerStore[roomName].secondsRemaining).toEqual(0);
         });
@@ -148,8 +147,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 0,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(io.to).toHaveBeenCalledWith(roomName);
           expect(io.emit).toHaveBeenCalledWith("timerResponse", {
@@ -163,8 +162,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 10,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(setIntervalSpy).toHaveBeenCalledWith(
             expect.any(Function),
@@ -176,8 +175,8 @@ describe("startCountdown", () => {
           startCountdown({
             roomName,
             durationInSeconds: 10,
-            io,
-            timerStore,
+            io: io as any,
+            timerStore: timerStore as any,
           });
           expect(timerStore[roomName].secondsRemaining).toEqual(10);
         });
@@ -187,8 +186,8 @@ describe("startCountdown", () => {
             startCountdown({
               roomName,
               durationInSeconds: 10,
-              io,
-              timerStore,
+              io: io as any,
+              timerStore: timerStore as any,
             });
             jest.advanceTimersByTime(1000);
             expect(timerStore[roomName].secondsRemaining).toEqual(9);
@@ -201,8 +200,8 @@ describe("startCountdown", () => {
               startCountdown({
                 roomName,
                 durationInSeconds: 10,
-                io,
-                timerStore,
+                io: io as any,
+                timerStore: timerStore as any,
               });
               jest.advanceTimersByTime(9000);
               expect(clearIntervalSpy).toHaveBeenCalledWith(mockTimer);
@@ -222,8 +221,8 @@ describe("startCountdown", () => {
               startCountdown({
                 roomName,
                 durationInSeconds: 10,
-                io,
-                timerStore,
+                io: io as any,
+                timerStore: timerStore as any,
               });
               jest.advanceTimersByTime(10000);
               expect(timerStore[roomName].secondsRemaining).toEqual(0);
@@ -234,8 +233,8 @@ describe("startCountdown", () => {
             startCountdown({
               roomName,
               durationInSeconds: 10,
-              io,
-              timerStore,
+              io: io as any,
+              timerStore: timerStore as any,
             });
             jest.advanceTimersByTime(1000);
             jest.advanceTimersByTime(1000);
@@ -252,8 +251,8 @@ describe("startCountdown", () => {
         startCountdown({
           roomName,
           durationInSeconds: 10,
-          io,
-          timerStore,
+          io: io as any,
+          timerStore: timerStore as any,
         });
         expect(io.to).toHaveBeenCalledWith(roomName);
         expect(io.emit).toHaveBeenCalledWith("timerResponse", {

@@ -1,16 +1,22 @@
+import { socketTestType, timerStoreTestType } from "../common/types/test/types";
 import { timerRequest } from "./timerRequest";
 
 describe("timerRequest", () => {
   describe("when inputs are invalid", () => {
+    let socket: socketTestType;
+
+    socket = {
+      emit: jest.fn(),
+    };
+
     beforeEach(() => {
       jest.spyOn(console, "error").mockImplementation(() => {
         return;
       });
     });
     afterEach(() => {
-        jest.clearAllMocks();
+      jest.clearAllMocks();
     });
-
 
     describe("when timerStore[roomName] is undefined | null", () => {
       describe("when timerStore[roomName] is undefined", () => {
@@ -18,7 +24,7 @@ describe("timerRequest", () => {
           timerRequest({
             timerStore: {},
             roomName: "room-1",
-            socket: {},
+            socket: socket as any,
           });
           expect(console.error).toHaveBeenCalledTimes(1);
         });
@@ -26,9 +32,9 @@ describe("timerRequest", () => {
       describe("when timerStore[roomName] is null", () => {
         it("should log an error", () => {
           timerRequest({
-            timerStore: { [null]:'' },
+            timerStore: { [null as any]: "" } as any,
             roomName: "room-1",
-            socket: {},
+            socket: socket as any,
           });
           expect(console.error).toHaveBeenCalledTimes(1);
         });
@@ -38,9 +44,9 @@ describe("timerRequest", () => {
       describe("when timerStore[roomName].secondsRemaining is undefined", () => {
         it("should log an error", () => {
           timerRequest({
-            timerStore: { "room-1": { secondsRemaining: undefined } },
+            timerStore: { "room-1": { secondsRemaining: undefined } } as any,
             roomName: "room-1",
-            socket: {},
+            socket: socket as any,
           });
           expect(console.error).toHaveBeenCalledTimes(1);
         });
@@ -48,9 +54,9 @@ describe("timerRequest", () => {
       describe("when timerStore[roomName].secondsRemaining is null", () => {
         it("should log an error", () => {
           timerRequest({
-            timerStore: { "room-1": { secondsRemaining: null } },
+            timerStore: { "room-1": { secondsRemaining: null } } as any,
             roomName: "room-1",
-            socket: {},
+            socket: socket as any,
           });
           expect(console.error).toHaveBeenCalledTimes(1);
         });
@@ -58,9 +64,11 @@ describe("timerRequest", () => {
       describe("when timerStore[roomName].secondsRemaining is not a number", () => {
         it("should log an error", () => {
           timerRequest({
-            timerStore: { "room-1": { secondsRemaining: "not a number" } },
+            timerStore: {
+              "room-1": { secondsRemaining: "not a number" },
+            } as any,
             roomName: "room-1",
-            socket: {},
+            socket: socket as any,
           });
           expect(console.error).toHaveBeenCalledTimes(1);
         });
@@ -69,14 +77,14 @@ describe("timerRequest", () => {
   });
 
   describe("when timerRequest is called", () => {
-    let socket;
-    let MOCK_TIMERSTORE;
+    let socket: socketTestType;
+    let MOCK_TIMERSTORE: timerStoreTestType;
     beforeEach(() => {
       MOCK_TIMERSTORE = {
         ["room-1"]: {
           secondsRemaining: 10,
           isPaused: false,
-          timer: null,
+          timer: null as any,
           users: [],
         },
       };
@@ -102,9 +110,9 @@ describe("timerRequest", () => {
       it("should emit 'timerResponse' event with secondsRemaining and isPaused", () => {
         MOCK_TIMERSTORE["room-1"].isPaused = true;
         timerRequest({
-          timerStore: MOCK_TIMERSTORE,
+          timerStore: MOCK_TIMERSTORE as any,
           roomName: "room-1",
-          socket,
+          socket: socket as any,
         });
         expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
           secondsRemaining: 10,
@@ -118,24 +126,22 @@ describe("timerRequest", () => {
         it("should not emit 'timerResponse' event", () => {
           jest.useFakeTimers();
           timerRequest({
-            timerStore: MOCK_TIMERSTORE,
+            timerStore: MOCK_TIMERSTORE as any,
             roomName: "room-1",
-            socket,
+            socket: socket as any,
           });
           expect(socket.emit).not.toHaveBeenCalled();
         });
       });
-
-
 
       describe("when timerStore[roomName].secondsRemaining has changed", () => {
         it("should emit 'timerResponse' event", () => {
           jest.useFakeTimers();
 
           timerRequest({
-            timerStore: MOCK_TIMERSTORE,
+            timerStore: MOCK_TIMERSTORE as any,
             roomName: "room-1",
-            socket,
+            socket: socket as any,
           });
 
           expect(socket.emit).not.toHaveBeenCalled();
@@ -147,57 +153,54 @@ describe("timerRequest", () => {
             isPaused: false,
           });
           expect(socket.emit).toHaveBeenCalledTimes(1);
-
         });
 
         describe("when timerStore[roomName].secondsRemaining has changed multiple times", () => {
-            it("should not emit 'timerResponse' event more than once", () => {
-              jest.useFakeTimers();
-              const clearIntervalMock = jest.spyOn(global, "clearInterval");
-              timerRequest({
-                timerStore: MOCK_TIMERSTORE,
-                roomName: "room-1",
-                socket,
-              });
-              
+          it("should not emit 'timerResponse' event more than once", () => {
+            jest.useFakeTimers();
+            const clearIntervalMock = jest.spyOn(global, "clearInterval");
+            timerRequest({
+              timerStore: MOCK_TIMERSTORE as any,
+              roomName: "room-1",
+              socket: socket as any,
+            });
+
             // should not emit with secondsRemaining: 10
-              expect(socket.emit).not.toHaveBeenCalled();
-              expect(clearIntervalMock).not.toHaveBeenCalled();
-              expect(socket.emit).not.toHaveBeenCalledWith("timerResponse", {
-                secondsRemaining: 10,
-                isPaused: false,
-              });
-    
-              jest.advanceTimersByTime(1);
-              expect(socket.emit).not.toHaveBeenCalled();
-    
-              // should only emit once, with secondsRemaining: 9
-              MOCK_TIMERSTORE["room-1"].secondsRemaining = 9;
-              jest.advanceTimersByTime(1);
-              expect(socket.emit).toHaveBeenCalledTimes(1);
-              expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
-                secondsRemaining: 9,
-                isPaused: false,
-              });
+            expect(socket.emit).not.toHaveBeenCalled();
+            expect(clearIntervalMock).not.toHaveBeenCalled();
+            expect(socket.emit).not.toHaveBeenCalledWith("timerResponse", {
+              secondsRemaining: 10,
+              isPaused: false,
+            });
+
+            jest.advanceTimersByTime(1);
+            expect(socket.emit).not.toHaveBeenCalled();
+
+            // should only emit once, with secondsRemaining: 9
+            MOCK_TIMERSTORE["room-1"].secondsRemaining = 9;
+            jest.advanceTimersByTime(1);
+            expect(socket.emit).toHaveBeenCalledTimes(1);
+            expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
+              secondsRemaining: 9,
+              isPaused: false,
+            });
 
             // should not emit with anything other than secondsRemaining: 9
-              MOCK_TIMERSTORE["room-1"].secondsRemaining = 8;
-              jest.advanceTimersByTime(1);
+            MOCK_TIMERSTORE["room-1"].secondsRemaining = 8;
+            jest.advanceTimersByTime(1);
 
-              expect(socket.emit).not.toHaveBeenCalledWith("timerResponse", {
-                secondsRemaining: 8,
-                isPaused: false,
-              })
-              expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
-                secondsRemaining: 9,
-                isPaused: false,
-              })
-              expect(clearIntervalMock).toHaveBeenCalled();
-              expect(clearIntervalMock).toHaveBeenCalledTimes(1);
+            expect(socket.emit).not.toHaveBeenCalledWith("timerResponse", {
+              secondsRemaining: 8,
+              isPaused: false,
             });
+            expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
+              secondsRemaining: 9,
+              isPaused: false,
+            });
+            expect(clearIntervalMock).toHaveBeenCalled();
+            expect(clearIntervalMock).toHaveBeenCalledTimes(1);
           });
-
-
+        });
       });
     });
   });

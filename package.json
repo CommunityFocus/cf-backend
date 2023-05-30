@@ -39,6 +39,7 @@
     "@types/node": "^20.2.5",
     "concurrently": "^8.0.1",
     "socket.io-client": "^4.6.1",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.0.4"
   }
 }

@@ -10,7 +10,7 @@ describe("destroyTimer", () => {
         const consoleErrorSpy = jest
           .spyOn(console, "error")
           .mockImplementation();
-        destroyTimer({ roomName: null, timerStore: {} });
+        destroyTimer({ roomName: null as any, timerStore: {} });
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           "Room null does not exist. Failed to destroy timer"
         );
@@ -21,7 +21,7 @@ describe("destroyTimer", () => {
         const consoleErrorSpy = jest
           .spyOn(console, "error")
           .mockImplementation();
-        destroyTimer({ roomName: "roomName", timerStore: null });
+        destroyTimer({ roomName: "roomName", timerStore: null as any });
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           "Room roomName does not exist. Failed to destroy timer"
         );
@@ -30,11 +30,11 @@ describe("destroyTimer", () => {
   });
 
   describe("when the inputs are valid", () => {
-    let clearIntervalSpy;
-    let consoleLogSpy;
-    let roomName;
-    let mockTimer;
-    let timerStore;
+    let clearIntervalSpy: jest.SpyInstance;
+    let consoleLogSpy: jest.SpyInstance;
+    let roomName: string;
+    let mockTimer: NodeJS.Timeout;
+    let timerStore: { [x: string]: any; }
     beforeEach(() => {
       clearIntervalSpy = jest.spyOn(global, "clearInterval");
       consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
