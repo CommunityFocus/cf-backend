@@ -1,6 +1,6 @@
-import { TimerStore } from "@common/types/types";
+import { TimerStore } from "../types";
 import { Response } from "express";
-import { RequestWithTimerStore } from "@common/types/express/types";
+import { RequestWithTimerStore } from "../express/types";
 
 export interface MockRequest extends Partial<RequestWithTimerStore> {
 	body: jest.MockedFunction<any>,

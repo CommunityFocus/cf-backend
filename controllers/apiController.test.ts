@@ -1,6 +1,6 @@
-import { RequestWithTimerStore } from "@common/types/express/types";
-import { MockRequest, MockResponse } from "@common/types/test/types";
-import { generateSlug } from "@helpers/generateSlug";
+import { RequestWithTimerStore } from "../common/types/express/types";
+import { MockRequest, MockResponse } from "../common/types/test/types";
+import { generateSlug } from "../helpers/generateSlug";
 import { Response } from "express";
 import { slugHandler } from "./apiController";
 
@@ -32,7 +32,7 @@ describe('apiController', () => {
 			generateSlugMock.mockReturnValue('big-blue-butterfly');
 
 			// await slugHandler(req as RequestWithTimerStore, res as Response);
-			await slugHandler(req as Request, res as Response);
+			await slugHandler(req as RequestWithTimerStore, res as Response);
 
 			expect(res.json).toHaveBeenCalledWith({ slug: 'big-blue-butterfly' });
 		});
@@ -63,7 +63,7 @@ describe('apiController', () => {
 					.mockReturnValue('big-blue-butterfly');
 
 				// await slugHandler(req as RequestWithTimerStore, res as Response);
-				await slugHandler(req as Request, res as Response);
+				await slugHandler(req as RequestWithTimerStore, res as Response);
 
 				expect(generateSlugMock).toBeCalledTimes(3);
 				expect(res.json).toHaveBeenCalledWith({ slug: 'big-blue-butterfly' });
@@ -89,7 +89,7 @@ describe('apiController', () => {
 				generateSlugMock.mockReturnValue('test');
 
 				// await slugHandler(req as RequestWithTimerStore, res as Response);
-				await slugHandler(req as Request, res as Response);
+				await slugHandler(req as RequestWithTimerStore, res as Response);
 
 				/*
 					generateSlug is called 51 times - once for the initial slug
@@ -99,6 +99,18 @@ describe('apiController', () => {
 				expect(res.status).toBeCalledWith(429);
 				expect(res.json).toHaveBeenCalledWith({
 					message: 'Issue generating slug, no available slugs found.'
+				});
+			}
+		);
+
+		test(
+			"should return an error and status 500 if timer store is missing on request object",
+			async () => {
+				await slugHandler(req as RequestWithTimerStore, res as Response);
+
+				expect(res.status).toBeCalledWith(500);
+				expect(res.json).toHaveBeenCalledWith({
+					message: 'Timer Store was not found in request.'
 				});
 			}
 		);

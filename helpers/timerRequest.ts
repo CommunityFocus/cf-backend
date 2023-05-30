@@ -1,6 +1,13 @@
-import { TimerStore } from "@common/types/types";
+import { TimerStore } from "../common/types/types";
+import { Socket } from "socket.io";
 
-const timerRequest = ({ timerStore, roomName, socket }:{ timerStore:TimerStore, roomName:string, socket }) => {
+export interface TimerRequestArgs {
+  timerStore: TimerStore,
+  roomName: string,
+  socket: Socket,
+};
+
+const timerRequest = ({ timerStore, roomName, socket }: TimerRequestArgs) => {
   if (!timerStore[roomName]) {
     console.error("timerStore[roomName] is undefined | null");
     return;

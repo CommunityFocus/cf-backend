@@ -1,4 +1,4 @@
-const { destroyTimer } = require("./destroyTimer");
+import { destroyTimer } from "./destroyTimer";
 
 describe("destroyTimer", () => {
   afterEach(() => {

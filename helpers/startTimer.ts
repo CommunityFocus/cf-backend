@@ -1,6 +1,14 @@
-import { TimerStore } from "@common/types/types";
+import { ServerType } from "../common/types/socket/types";
+import { TimerStore } from "../common/types/types";
 
-function startCountdown({ roomName, durationInSeconds, io, timerStore }:{ roomName:string, durationInSeconds:number, io, timerStore:TimerStore }) {
+interface StartCountdownArgs {
+  roomName: string;
+  durationInSeconds: number;
+  io: ServerType;
+  timerStore: TimerStore;
+}
+
+function startCountdown({ roomName, durationInSeconds, io, timerStore }: StartCountdownArgs) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to start timer`);
     return;
