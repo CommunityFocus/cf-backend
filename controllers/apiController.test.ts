@@ -31,7 +31,8 @@ describe('apiController', () => {
 		test('should return a slug', async () => {
 			generateSlugMock.mockReturnValue('big-blue-butterfly');
 
-			await slugHandler(req as RequestWithTimerStore, res as Response);
+			// await slugHandler(req as RequestWithTimerStore, res as Response);
+			await slugHandler(req as Request, res as Response);
 
 			expect(res.json).toHaveBeenCalledWith({ slug: 'big-blue-butterfly' });
 		});
@@ -61,7 +62,8 @@ describe('apiController', () => {
 					.mockReturnValueOnce('second-room-name')
 					.mockReturnValue('big-blue-butterfly');
 
-				await slugHandler(req as RequestWithTimerStore, res as Response);
+				// await slugHandler(req as RequestWithTimerStore, res as Response);
+				await slugHandler(req as Request, res as Response);
 
 				expect(generateSlugMock).toBeCalledTimes(3);
 				expect(res.json).toHaveBeenCalledWith({ slug: 'big-blue-butterfly' });
