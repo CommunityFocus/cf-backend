@@ -1,4 +1,11 @@
-function destroyTimer({ roomName, timerStore }) {
+import { TimerStore } from "../common/types/types";
+
+export interface DestroyTimerArgs {
+  roomName: string,
+  timerStore: TimerStore,
+};
+
+export function destroyTimer({ roomName, timerStore }: DestroyTimerArgs) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to destroy timer`);
   } else {
@@ -10,5 +17,3 @@ function destroyTimer({ roomName, timerStore }) {
     );
   }
 }
-
-module.exports = { destroyTimer };

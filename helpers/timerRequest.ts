@@ -1,4 +1,13 @@
-const timerRequest = ({ timerStore, roomName, socket }) => {
+import { TimerStore } from "../common/types/types";
+import { Socket } from "socket.io";
+
+export interface TimerRequestArgs {
+  timerStore: TimerStore,
+  roomName: string,
+  socket: Socket,
+};
+
+const timerRequest = ({ timerStore, roomName, socket }: TimerRequestArgs) => {
   if (!timerStore[roomName]) {
     console.error("timerStore[roomName] is undefined | null");
     return;
@@ -45,4 +54,4 @@ const timerRequest = ({ timerStore, roomName, socket }) => {
   }, 1); // Check every 1 ms
 };
 
-module.exports = { timerRequest };
+export { timerRequest };

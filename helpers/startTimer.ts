@@ -1,4 +1,14 @@
-function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
+import { ServerType } from "../common/types/socket/types";
+import { TimerStore } from "../common/types/types";
+
+interface StartCountdownArgs {
+  roomName: string;
+  durationInSeconds: number;
+  io: ServerType;
+  timerStore: TimerStore;
+}
+
+function startCountdown({ roomName, durationInSeconds, io, timerStore }: StartCountdownArgs) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to start timer`);
     return;
@@ -44,4 +54,4 @@ function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
   });
 }
 
-module.exports = { startCountdown };
+export { startCountdown };

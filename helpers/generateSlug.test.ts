@@ -1,4 +1,4 @@
-const { options, generateSlug } = require("./generateSlug");
+import { options, generateSlug } from "./generateSlug";
 
 describe('generateSlug', () => {
 	describe('should generate a slug', () => {
@@ -28,22 +28,22 @@ describe('generateSlug', () => {
 
 	describe('options should not contain', () => {
 		test('appearances', () => {
-			expect(options.categories.adjective).not.toContain('appearance');
+			expect(options.categories!.adjective).not.toContain('appearance');
 		});
 		test('color', () => {
-			expect(options.categories.adjective).not.toContain('appearance');
+			expect(options.categories!.adjective).not.toContain('appearance');
 		});
 		test('family', () => {
-			expect(options.categories.noun).not.toContain('family');
+			expect(options.categories!.noun).not.toContain('family');
 		});
 		test('people', () => {
-			expect(options.categories.noun).not.toContain('people');
+			expect(options.categories!.noun).not.toContain('people');
 		});
 		test('profession', () => {
-			expect(options.categories.noun).not.toContain('profession');
+			expect(options.categories!.noun).not.toContain('profession');
 		});
 		test('religion', () => {
-			expect(options.categories.noun).not.toContain('religion');
+			expect(options.categories!.noun).not.toContain('religion');
 		});
 	});
 });
