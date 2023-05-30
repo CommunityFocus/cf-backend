@@ -106,6 +106,9 @@ describe('apiController', () => {
 		test(
 			"should return an error and status 500 if timer store is missing on request object",
 			async () => {
+
+				req.timerStore = undefined as any;
+				
 				await slugHandler(req as RequestWithTimerStore, res as Response);
 
 				expect(res.status).toBeCalledWith(500);
