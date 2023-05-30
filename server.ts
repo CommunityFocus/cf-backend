@@ -1,22 +1,23 @@
 import express from "express";
 import { Server } from "socket.io";
-import { startCountdown } from "@helpers/startTimer";
-import { timerRequest } from "@helpers/timerRequest";
+import { startCountdown } from "./helpers/startTimer";
+import { timerRequest } from "./helpers/timerRequest";
 import { destroyTimer } from "./helpers/destroyTimer";
-import apiRoutes from "@routes/apiRoutes";
-import { storeMiddleware } from "@middleware/storeMiddleware";
+import apiRoutes from "./routes/apiRoutes";
+import { storeMiddleware } from "./middleware/storeMiddleware";
 import http, { createServer } from "http";
 import https from "https";
 import cors from "cors";
-import { TimerStore } from "@common/types/types";
+import { TimerStore } from "./common/types/types";
 import { Request, Response } from "express";
 import {
   ClientToServerEvents,
   InterServerEvents,
   ServerToClientEvents,
   SocketData,
-  StartCountdownArgs,
-} from "@common/types/socket/types";
+  EmitStartCountdownArgs,
+  EmitTimerRequestArgs,
+} from "./common/types/socket/types";
 import { Client } from "socket.io/dist/client";
 
 const app = express();
@@ -151,7 +152,7 @@ io.on("connection", (socket) => {
   // handle requests to start a countdown
   socket.on(
     "startCountdown",
-    ({ roomName, durationInSeconds }: StartCountdownArgs) => {
+    ({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
       console.log({ roomName, durationInSeconds });
       if (roomName !== "default") {
         startCountdown({ roomName, durationInSeconds, io, timerStore });
@@ -159,7 +160,7 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("timerRequest", ({ roomName }: { roomName: string }) => {
+  socket.on("timerRequest", ({ roomName }: EmitTimerRequestArgs) => {
     timerRequest({ roomName, timerStore, socket });
   });
 
@@ -170,7 +171,7 @@ io.on("connection", (socket) => {
   socket.on("unpauseCountdown", () => {});
 });
 
-module.exports = {
+export {
   io,
   httpServer,
   timerStore,

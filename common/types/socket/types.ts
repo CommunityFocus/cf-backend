@@ -1,30 +1,30 @@
 import { type } from "os";
 import { Server } from "socket.io";
 
-export interface TimerResponseArgs {
-  secondsRemaining: number;
-  isPaused: boolean;
-}
-
-export interface StartCountdownArgs {
+export interface EmitStartCountdownArgs {
   roomName: string;
   durationInSeconds: number;
 }
 
-export interface TimerRequestArgs {
+export interface EmitTimerRequestArgs {
   roomName: string;
+}
+
+export interface EmitTimerResponseArgs {
+  secondsRemaining: number;
+  isPaused: boolean;
 }
 
 // all emit events
 export interface ServerToClientEvents {
   usersInRoom: (numUsers: number) => void;
-  timerResponse: (data: TimerResponseArgs) => void;
+  timerResponse: (data: EmitTimerResponseArgs) => void;
 }
 
 // socket.on
 export interface ClientToServerEvents {
-  startCountdown: (data: StartCountdownArgs) => void;
-  timerRequest: (data: TimerRequestArgs) => void;
+  startCountdown: (data: EmitStartCountdownArgs) => void;
+  timerRequest: (data: EmitTimerRequestArgs) => void;
   pauseCountdown: () => void;
   unpauseCountdown: () => void;
   join: (roomName: string) => void;
@@ -39,3 +39,9 @@ export interface InterServerEvents {
 // socket.data type
 export interface SocketData {}
 
+export type ServerType = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;

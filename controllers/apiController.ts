@@ -1,9 +1,15 @@
-import { Request, Response } from "express";
-import { generateSlug } from "@helpers/generateSlug";
-import { RequestWithTimerStore } from "@common/types/express/types";
+import { Response } from "express";
+import { generateSlug } from "../helpers/generateSlug";
+import { RequestWithTimerStore } from "../common/types/express/types";
 
 // export const slugHandler = (req: RequestWithTimerStore, res: Response) => {
-export const slugHandler = (req: Request, res: Response) => {
+export const slugHandler = (req: RequestWithTimerStore, res: Response) => {
+  if (!req.timerStore) {
+      return res.status(500).json({
+        message: "Timer Store was not found in request.",
+      });
+  }
+
   let slug = generateSlug();
   const existingStores = Object.keys(req.timerStore);
   let retryAttempts = 0;

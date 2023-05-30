@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { slugHandler } from "@controllers/apiController";
+import { slugHandler } from "../controllers/apiController";
 
 const router = Router();
 router.get("/getSlug", slugHandler);
