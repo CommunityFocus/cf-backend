@@ -1,5 +1,5 @@
 # cf-backend
-CommunityFocus is a sharable time tracking app for teams
+CommunityFocus is a sharable time tracking app for teams.
 
 ## Getting Started
 To contibute:
