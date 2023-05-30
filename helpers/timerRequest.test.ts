@@ -1,4 +1,4 @@
-const { timerRequest } = require("./timerRequest");
+import { timerRequest } from "./timerRequest";
 
 describe("timerRequest", () => {
   describe("when inputs are invalid", () => {

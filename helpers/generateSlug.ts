@@ -1,6 +1,6 @@
-const { generateSlug } = require("random-word-slugs");
+import { RandomWordOptions, generateSlug } from "random-word-slugs";
 
-const options = {
+const options: RandomWordOptions<3> = {
 	format: "kebab",
 	categories: {
 		adjective: [
@@ -36,8 +36,7 @@ function generateCustomSlug() {
 	return generateSlug(3, options);
 }
 
-
-module.exports = {
+export {
 	options,
-	generateSlug: generateCustomSlug,
-};
+	generateCustomSlug as generateSlug,
+}

@@ -1,17 +1,25 @@
-const express = require("express");
+import express from "express";
+import { Server } from "socket.io";
+import { startCountdown } from "@helpers/startTimer";
+import { timerRequest } from "@helpers/timerRequest";
+import { destroyTimer } from "./helpers/destroyTimer"
+import apiRoutes from "@routes/apiRoutes";
+import { storeMiddleware } from "@middleware/storeMiddleware";
+import http, { createServer } from "http";
+import https from "https";
+import cors from "cors";
+import { ITimerStore } from "@common/types/types";
+import { Request, Response } from "express";
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData,
+} from "@common/types/socket/types";
+
 const app = express();
 const PORT = process.env.PORT || 4000;
-const { createServer } = require("http");
-const { Server } = require("socket.io");
-const { startCountdown } = require("./helpers/startTimer");
-const { timerRequest } = require("./helpers/timerRequest");
-
-const { destroyTimer } = require("./helpers/destroyTimer");
-const apiRoutes = require("./routes/apiRoutes");
-const { storeMiddleware } = require("./middleware/storeMiddleware");
-const httpServer = createServer(app);
-const cors = require("cors");
-
+const httpServer = createServer(app)
 
 // middleware
 app.use(
@@ -31,7 +39,12 @@ httpServer.listen(PORT, () => {
   );
 });
 
-const io = new Server(httpServer, {
+const io = new Server<
+  ServerToClientEvents,
+  ClientToServerEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
   cors: {
     origin: "*",
   },
@@ -50,10 +63,10 @@ const io = new Server(httpServer, {
  *    }
  * }
  */
-const timerStore = {};
+const timerStore: ITimerStore = {};
 
 // routes
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2",
   });
@@ -64,13 +77,13 @@ app.use("/api/v1/", storeMiddleware(timerStore), apiRoutes);
 // listen for socket.io connections and handle the countdown events
 io.on("connection", (socket) => {
   // get the room name from the query string. Example of roomName: "/:room"
-  let roomName = socket.handshake.query.roomName;
+  let roomName = socket.handshake.query.roomName as string;
 
   // if there's no roomName property for this room, create one
   if (!timerStore[roomName]) {
     timerStore[roomName] = {
       users: [],
-      timer: null,
+      timer: undefined,
       secondsRemaining: 0,
       isPaused: false,
     };
@@ -83,7 +96,7 @@ io.on("connection", (socket) => {
     clearInterval(timerStore[roomName].destroyTimer);
   }
 
-  socket.on("join", (roomName) => {
+  socket.on("join", (roomName: string) => {
     // join the room
     socket.join(roomName);
 
@@ -133,14 +146,23 @@ io.on("connection", (socket) => {
   });
 
   // handle requests to start a countdown
-  socket.on("startCountdown", ({ roomName, durationInSeconds }) => {
-    console.log({ roomName, durationInSeconds });
-    if (roomName !== "default") {
-      startCountdown({ roomName, durationInSeconds, io, timerStore });
+  socket.on(
+    "startCountdown",
+    ({
+      roomName,
+      durationInSeconds,
+    }: {
+      roomName: string;
+      durationInSeconds: number;
+    }) => {
+      console.log({ roomName, durationInSeconds });
+      if (roomName !== "default") {
+        startCountdown({ roomName, durationInSeconds, io, timerStore });
+      }
     }
-  });
+  );
 
-  socket.on("timerRequest", ({ roomName }) => {
+  socket.on("timerRequest", ({ roomName }: { roomName: string }) => {
     timerRequest({ roomName, timerStore, socket });
   });
 

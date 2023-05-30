@@ -1,4 +1,11 @@
-function destroyTimer({ roomName, timerStore }) {
+import { ITimerStore } from "@common/types/types";
+
+interface DestroyTimer {
+  roomName: string,
+  timerStore: ITimerStore,
+};
+
+function destroyTimer({ roomName, timerStore }: DestroyTimer) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to destroy timer`);
   } else {
@@ -11,4 +18,4 @@ function destroyTimer({ roomName, timerStore }) {
   }
 }
 
-module.exports = { destroyTimer };
+export { destroyTimer };

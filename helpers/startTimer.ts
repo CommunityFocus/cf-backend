@@ -1,4 +1,6 @@
-function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
+import { ITimerStore } from "@common/types/types";
+
+function startCountdown({ roomName, durationInSeconds, io, timerStore }:{ roomName:string, durationInSeconds:number, io, timerStore:ITimerStore }) {
   if (!roomName || !timerStore || !timerStore[roomName]) {
     console.error(`Room ${roomName} does not exist. Failed to start timer`);
     return;
@@ -44,4 +46,4 @@ function startCountdown({ roomName, durationInSeconds, io, timerStore }) {
   });
 }
 
-module.exports = { startCountdown };
+export { startCountdown };

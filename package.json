@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@types/jest": "^29.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
@@ -11,8 +10,9 @@
     "socket.io": "^4.6.1"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "build": "npx tsc",
+    "start": "node dist/server.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon dist/server.js\"",
     "test": "jest --watch --verbose --coverage",
     "test:ci": "jest --ci --verbose --coverage"
   },
@@ -32,6 +32,12 @@
   },
   "homepage": "https://github.com/nmpereira/time-share-v2#readme",
   "devDependencies": {
-    "socket.io-client": "^4.6.1"
+    "@types/express": "^4.17.17",
+    "@types/http-server": "^0.12.1",
+    "@types/jest": "^29.5.1",
+    "@types/node": "^20.2.5",
+    "concurrently": "^8.0.1",
+    "socket.io-client": "^4.6.1",
+    "typescript": "^5.0.4"
   }
 }

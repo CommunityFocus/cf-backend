@@ -1,12 +1,17 @@
-const apiController = require("./apiController");
-const { generateSlug } = require("../helpers/generateSlug");
+import { RequestWithTimerStore } from "@common/types/express/types";
+import { MockRequest, MockResponse } from "@common/types/test/types";
+import { generateSlug } from "@helpers/generateSlug";
+import { Response } from "express";
+import { slugHandler } from "./apiController";
 
 // Mocks
-jest.mock('../helpers/generateSlug')
+jest.mock('@helpers/generateSlug')
+const generateSlugMock = jest.mocked(generateSlug, { shallow: true });
 
 describe('apiController', () => {
 	describe('slugHandler', () => {
-		let req, res;
+		let req: MockRequest,
+		    res: MockResponse;
 
 		beforeEach(() => {
 			req = {
@@ -20,13 +25,13 @@ describe('apiController', () => {
 				json: jest.fn().mockReturnThis(),
 			};
 
-			generateSlug.mockReset();
+			generateSlugMock.mockReset();
 		});
 
 		test('should return a slug', async () => {
-			generateSlug.mockReturnValue('big-blue-butterfly');
+			generateSlugMock.mockReturnValue('big-blue-butterfly');
 
-			await apiController.slugHandler(req, res);
+			await slugHandler(req as RequestWithTimerStore, res as Response);
 
 			expect(res.json).toHaveBeenCalledWith({ slug: 'big-blue-butterfly' });
 		});
@@ -35,20 +40,30 @@ describe('apiController', () => {
 			"should regenerate slug until it finds one that isn't already taken",
 			async () => {
 				req.timerStore = {
-					"first-room-name": {},
-					"second-room-name": {},
+					"first-room-name": {
+						users: [],
+						timer: undefined,
+						secondsRemaining: 0,
+						isPaused: false
+					},
+					"second-room-name": {
+						users: [],
+						timer: undefined,
+						secondsRemaining: 0,
+						isPaused: false
+					},
 				};
 
 				// First two values returned should be the names already taken in
 				// timerStore, third attempt should succeed with "big-blue-butterfly".
-				generateSlug
+				generateSlugMock
 					.mockReturnValueOnce('first-room-name')
 					.mockReturnValueOnce('second-room-name')
 					.mockReturnValue('big-blue-butterfly');
 
-				await apiController.slugHandler(req, res);
+				await slugHandler(req as RequestWithTimerStore, res as Response);
 
-				expect(generateSlug).toBeCalledTimes(3);
+				expect(generateSlugMock).toBeCalledTimes(3);
 				expect(res.json).toHaveBeenCalledWith({ slug: 'big-blue-butterfly' });
 			}
 		);
@@ -61,16 +76,23 @@ describe('apiController', () => {
 					generateSlug, that way it will trigger the 50 retry limit and return
 					an error response.
 				*/
-				req.timerStore = { test: {} }
-				generateSlug.mockReturnValue('test');
+				req.timerStore = {
+					test: {
+						users: [],
+						timer: undefined,
+						secondsRemaining: 0,
+						isPaused: false
+					}
+				}
+				generateSlugMock.mockReturnValue('test');
 
-				await apiController.slugHandler(req, res);
+				await slugHandler(req as RequestWithTimerStore, res as Response);
 
 				/*
 					generateSlug is called 51 times - once for the initial slug
 					generation, and 50 retry attempts.
 				*/
-				expect(generateSlug).toBeCalledTimes(51);
+				expect(generateSlugMock).toBeCalledTimes(51);
 				expect(res.status).toBeCalledWith(429);
 				expect(res.json).toHaveBeenCalledWith({
 					message: 'Issue generating slug, no available slugs found.'

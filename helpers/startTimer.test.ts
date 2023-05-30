@@ -1,15 +1,16 @@
-const { startCountdown } = require("./startTimer");
+import { ITimerStore } from "@common/types/types";
+import { startCountdown } from "@helpers/startTimer";
 
 describe("startCountdown", () => {
   describe("when startCountdown is called", () => {
-    let clearIntervalSpy;
-    let consoleLogSpy;
-    let consoleErrorSpy;
-    let roomName;
-    let mockTimer;
-    let timerStore;
-    let io;
-    let setIntervalSpy;
+    let clearIntervalSpy: jest.SpyInstance;
+    let consoleLogSpy: jest.SpyInstance;
+    let consoleErrorSpy: jest.SpyInstance;
+    let roomName: string;
+    let mockTimer: NodeJS.Timeout;
+    let timerStore: Partial<ITimerStore>;
+    let io: { emit: any; to: any}
+    let setIntervalSpy: jest.SpyInstance;
     beforeEach(() => {
       jest.useFakeTimers();
       clearIntervalSpy = jest.spyOn(global, "clearInterval");
