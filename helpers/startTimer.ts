@@ -44,23 +44,30 @@ const startCountdown = ({
 	let remainingTime = (timerStore[roomName].secondsRemaining =
 		durationInSeconds);
 
-	// eslint-disable-next-line no-param-reassign
-	timerStore[roomName].timer = setInterval(() => {
-		if (timerStore[roomName].secondsRemaining <= 0) {
-			clearInterval(timerStore[roomName].timer);
-			// eslint-disable-next-line no-param-reassign
-			timerStore[roomName].secondsRemaining = 0;
-		} else {
-			remainingTime--;
-			// eslint-disable-next-line no-param-reassign
-			timerStore[roomName].secondsRemaining = remainingTime;
-		}
-	}, 1000);
+// eslint-disable-next-line no-param-reassign
+  timerStore[roomName].timer = setInterval(() => {
+    if (!timerStore[roomName].isPaused) {
+      if (timerStore[roomName].secondsRemaining <= 0) {
+        clearInterval(timerStore[roomName].timer);
+		// eslint-disable-next-line no-param-reassign
+        timerStore[roomName].secondsRemaining = 0;
+      } else {
+        remainingTime--;
+		// eslint-disable-next-line no-param-reassign
+        timerStore[roomName].secondsRemaining = remainingTime;
+      }
+    }
+    console.log({
+      roomName,
+      secondsRemaining: remainingTime,
+      isPaused: timerStore[roomName].isPaused,
+    });
+  }, 1000);
 
-	io.to(roomName).emit("timerResponse", {
-		secondsRemaining: remainingTime,
-		isPaused: false,
-	});
-};
+  io.to(roomName).emit("timerResponse", {
+    secondsRemaining: remainingTime,
+    isPaused: timerStore[roomName].isPaused,
+  });
+}
 
 export default startCountdown;
