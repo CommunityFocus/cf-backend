@@ -1,11 +1,20 @@
-import { TimerStore } from '../common/types/types';
-import { Response, NextFunction } from 'express';
-import { RequestWithTimerStore } from '../common/types/express/types';
+import { Response, NextFunction } from "express";
+import { TimerStore } from "../common/types/types";
+import {
+	ExpressRouteReturnType,
+	RequestWithTimerStore,
+} from "../common/types/express/types";
 
-export const storeMiddleware = function(store: TimerStore) {
-  // return function (req: RequestWithTimerStore, res:Response, next:NextFunction) {
-  return function (req: RequestWithTimerStore, res:Response, next:NextFunction) {
-    req.timerStore = store;
-    next();
-  }
-}
+const storeMiddleware = (store: TimerStore) => {
+	return (
+		req: RequestWithTimerStore,
+		res: Response,
+		next: NextFunction
+	): ExpressRouteReturnType => {
+		req.timerStore = store;
+		next();
+		return undefined;
+	};
+};
+
+export default storeMiddleware;
