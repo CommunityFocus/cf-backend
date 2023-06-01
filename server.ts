@@ -188,9 +188,6 @@ io.on("connection", (socket) => {
     timerRequest({ roomName, timerStore, socket });
   });
 
-	// handle requests to unpause a countdown
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	socket.on("unpauseCountdown", () => {});
 });
 
 export { io, httpServer, timerStore };
