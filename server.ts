@@ -187,7 +187,6 @@ io.on("connection", (socket) => {
     });
     timerRequest({ roomName, timerStore, socket });
   });
-
 });
 
 export { io, httpServer, timerStore };
