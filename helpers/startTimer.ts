@@ -57,11 +57,6 @@ const startCountdown = ({
         timerStore[roomName].secondsRemaining = remainingTime;
       }
     }
-    console.log({
-      roomName,
-      secondsRemaining: remainingTime,
-      isPaused: timerStore[roomName].isPaused,
-    });
   }, 1000);
 
   io.to(roomName).emit("timerResponse", {

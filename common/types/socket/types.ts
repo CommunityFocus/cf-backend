@@ -30,7 +30,6 @@ export interface ClientToServerEvents {
 	join: (roomName: string) => void;
   timerRequest: (data: EmitTimerRequestArgs) => void;
   pauseCountdown: (data: EmitTPauseArgs) => void;
-  // disconnect: () => void;
 }
 
 // io.on
