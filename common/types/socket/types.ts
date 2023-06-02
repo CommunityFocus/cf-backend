@@ -29,7 +29,6 @@ export interface ClientToServerEvents {
   startCountdown: (data: EmitStartCountdownArgs) => void;
   timerRequest: (data: EmitTimerRequestArgs) => void;
   pauseCountdown: (data: EmitTPauseArgs) => void;
-  unpauseCountdown: () => void;
   join: (roomName: string) => void;
   // disconnect: () => void;
 }
