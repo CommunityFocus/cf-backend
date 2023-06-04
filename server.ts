@@ -9,13 +9,12 @@ import apiRoutes from "./routes/apiRoutes";
 import storeMiddleware from "./middleware/storeMiddleware";
 import { TimerStore } from "./common/types/types";
 import {
-	ClientToServerEvents,
-	InterServerEvents,
-	ServerToClientEvents,
-	SocketData,
-	EmitStartCountdownArgs,
-	EmitTimerRequestArgs,
-  EmitTPauseArgs,
+  ClientToServerEvents,
+  InterServerEvents,
+  ServerToClientEvents,
+  SocketData,
+  EmitStartCountdownArgs,
+  ClientEmitWithRoomName,
 } from "./common/types/socket/types";
 
 const app = express();
@@ -61,6 +60,7 @@ const io = new Server<
  *    secondsRemaining: number,
  *    isPaused: boolean,
  *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
+ *    originalDuration: number // This is used to reset the timer
  *    }
  * }
  */
@@ -80,16 +80,17 @@ io.on("connection", (socket) => {
 	// get the room name from the query string. Example of roomName: "/:room"
 	const roomName = socket.handshake.query.roomName as string;
 
-	// if there's no roomName property for this room, create one
-	if (!timerStore[roomName]) {
-		timerStore[roomName] = {
-			users: [],
-			timer: undefined,
-			secondsRemaining: 0,
-			isPaused: false,
-		};
-	}
-	// console.log("timerStore", timerStore);
+  // if there's no roomName property for this room, create one
+  if (!timerStore[roomName]) {
+    timerStore[roomName] = {
+      users: [],
+      timer: undefined,
+      secondsRemaining: 0,
+      isPaused: false,
+      originalDuration: 0,
+    };
+  }
+  // console.log("timerStore", timerStore);
 
 	// if there is a destroy timer countdown, clear it
 	if (timerStore[roomName].destroyTimer && roomName !== "default") {
@@ -162,17 +163,17 @@ io.on("connection", (socket) => {
       if (roomName !== "default") {
         timerStore[roomName].isPaused = false;
         startCountdown({ roomName, durationInSeconds, io, timerStore });
+        timerStore[roomName].originalDuration = durationInSeconds;
       }
     }
   );
 
-	// eslint-disable-next-line no-shadow
-	socket.on("timerRequest", ({ roomName }: EmitTimerRequestArgs) => {
-		timerRequest({ roomName, timerStore, socket });
-	});
+  socket.on("timerRequest", ({ roomName }: ClientEmitWithRoomName) => {
+    timerRequest({ roomName, timerStore, socket });
+  });
 
   // handle requests to pause a countdown
-  socket.on("pauseCountdown", ({ roomName }: EmitTPauseArgs) => {
+  socket.on("pauseCountdown", ({ roomName }: ClientEmitWithRoomName) => {
     console.log("pauseCountdown", roomName, timerStore[roomName]);
     if (timerStore[roomName]) {
       timerStore[roomName].isPaused === true
@@ -188,6 +189,17 @@ io.on("connection", (socket) => {
     timerRequest({ roomName, timerStore, socket });
   });
 
+  socket.on("resetCountdown", ({ roomName }: ClientEmitWithRoomName) => {
+    console.log("resetCountdown", roomName);
+    if (roomName !== "default") {
+      startCountdown({
+        roomName,
+        durationInSeconds: timerStore[roomName].originalDuration,
+        io,
+        timerStore,
+      });
+    }
+  });
 });
 
 export { io, httpServer, timerStore };

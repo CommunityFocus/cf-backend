@@ -5,11 +5,7 @@ export interface EmitStartCountdownArgs {
 	durationInSeconds: number;
 }
 
-export interface EmitTimerRequestArgs {
-	roomName: string;
-}
-
-export interface EmitTPauseArgs {
+export interface ClientEmitWithRoomName {
   roomName: string;
 }
 
@@ -27,8 +23,9 @@ export interface ServerToClientEvents {
 // socket.on
 export interface ClientToServerEvents {
   startCountdown: (data: EmitStartCountdownArgs) => void;
-  timerRequest: (data: EmitTimerRequestArgs) => void;
-  pauseCountdown: (data: EmitTPauseArgs) => void;
+  pauseCountdown: (data: ClientEmitWithRoomName) => void;
+  timerRequest: (data: ClientEmitWithRoomName) => void;
+  resetCountdown: (data:ClientEmitWithRoomName) => void;
   join: (roomName: string) => void;
   // disconnect: () => void;
 }
