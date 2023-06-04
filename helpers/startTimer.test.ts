@@ -22,14 +22,14 @@ describe("startCountdown", () => {
 				emit: jest.fn(),
 			};
 
-      mockTimer = jest.fn().mockImplementation();
-      timerStore = {
-        [roomName]: {
-          timer: mockTimer,
-          isPaused: false,
-        },
-      };
-    });
+			mockTimer = jest.fn().mockImplementation();
+			timerStore = {
+				[roomName]: {
+					timer: mockTimer,
+					isPaused: false,
+				},
+			};
+		});
 
 		afterEach(() => {
 			jest.clearAllMocks();
@@ -254,56 +254,58 @@ describe("startCountdown", () => {
 						jest.advanceTimersByTime(1000);
 						jest.advanceTimersByTime(1000);
 
-            expect(io.emit).toHaveBeenCalledTimes(1);
-            expect(io.emit).toHaveBeenCalledWith("timerResponse", {
-              secondsRemaining: 10,
-              isPaused: false,
-            });
-          });
-        });
-      });
+						expect(io.emit).toHaveBeenCalledTimes(1);
+						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+							secondsRemaining: 10,
+							isPaused: false,
+						});
+					});
+				});
+			});
 
-      describe("when the timer is paused", () => {
-        describe("when the timer is paused before the timer is started", () => {
-          it("should not decrement the secondsRemaining", () => {
-            timerStore[roomName].isPaused = true;
-            startCountdown({
-              roomName,
-              durationInSeconds: 10,
-              io: io as any,
-              timerStore: timerStore as any,
-            });
-            jest.advanceTimersByTime(1000);
-            expect(timerStore[roomName].secondsRemaining).toEqual(10);
-          });
+			describe("when the timer is paused", () => {
+				describe("when the timer is paused before the timer is started", () => {
+					it("should not decrement the secondsRemaining", () => {
+						timerStore[roomName].isPaused = true;
+						startCountdown({
+							roomName,
+							durationInSeconds: 10,
+							io: io as any,
+							timerStore: timerStore as any,
+						});
+						jest.advanceTimersByTime(1000);
+						expect(timerStore[roomName].secondsRemaining).toEqual(
+							10
+						);
+					});
 
-          it("should not clear the timer", () => {
-            timerStore[roomName].isPaused = true;
-            startCountdown({
-              roomName,
-              durationInSeconds: 10,
-              io: io as any,
-              timerStore: timerStore as any,
-            });
-            jest.advanceTimersByTime(1000);
-            // should only be called once when the timer is started
-            expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
-          });
-        });
-      });
-      it("should emit a timerResponse event to the room", () => {
-        startCountdown({
-          roomName,
-          durationInSeconds: 10,
-          io: io as any,
-          timerStore: timerStore as any,
-        });
-        expect(io.to).toHaveBeenCalledWith(roomName);
-        expect(io.emit).toHaveBeenCalledWith("timerResponse", {
-          secondsRemaining: 10,
-          isPaused: false,
-        });
-      });
-    });
-  });
+					it("should not clear the timer", () => {
+						timerStore[roomName].isPaused = true;
+						startCountdown({
+							roomName,
+							durationInSeconds: 10,
+							io: io as any,
+							timerStore: timerStore as any,
+						});
+						jest.advanceTimersByTime(1000);
+						// should only be called once when the timer is started
+						expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
+					});
+				});
+			});
+			it("should emit a timerResponse event to the room", () => {
+				startCountdown({
+					roomName,
+					durationInSeconds: 10,
+					io: io as any,
+					timerStore: timerStore as any,
+				});
+				expect(io.to).toHaveBeenCalledWith(roomName);
+				expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+					secondsRemaining: 10,
+					isPaused: false,
+				});
+			});
+		});
+	});
 });
