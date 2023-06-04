@@ -9,6 +9,10 @@ export interface ClientEmitWithRoomName {
 	roomName: string;
 }
 
+export interface EmitTPauseArgs {
+	roomName: string;
+}
+
 export interface EmitTimerResponseArgs {
 	secondsRemaining: number;
 	isPaused: boolean;
@@ -27,7 +31,6 @@ export interface ClientToServerEvents {
 	timerRequest: (data: ClientEmitWithRoomName) => void;
 	resetCountdown: (data: ClientEmitWithRoomName) => void;
 	join: (roomName: string) => void;
-	// disconnect: () => void;
 }
 
 // io.on

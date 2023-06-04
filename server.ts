@@ -174,6 +174,7 @@ io.on("connection", (socket) => {
 
 	// handle requests to pause a countdown
 	socket.on("pauseCountdown", ({ roomName }: ClientEmitWithRoomName) => {
+
 		console.log("pauseCountdown", roomName, timerStore[roomName]);
 		if (timerStore[roomName]) {
 			timerStore[roomName].isPaused === true
@@ -188,7 +189,6 @@ io.on("connection", (socket) => {
 		});
 		timerRequest({ roomName, timerStore, socket });
 	});
-
 	socket.on("resetCountdown", ({ roomName }: ClientEmitWithRoomName) => {
 		console.log("resetCountdown", roomName);
 		if (roomName !== "default") {
