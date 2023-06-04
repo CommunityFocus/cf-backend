@@ -32,11 +32,8 @@ const options: RandomWordOptions<3> = {
 	},
 };
 
-function generateCustomSlug() {
+const generateCustomSlug = (): string => {
 	return generateSlug(3, options);
-}
+};
 
-export {
-	options,
-	generateCustomSlug as generateSlug,
-}
+export { options, generateCustomSlug as generateSlug };
