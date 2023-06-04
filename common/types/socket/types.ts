@@ -10,7 +10,7 @@ export interface EmitTimerRequestArgs {
 }
 
 export interface EmitTPauseArgs {
-  roomName: string;
+	roomName: string;
 }
 
 export interface EmitTimerResponseArgs {
@@ -28,8 +28,8 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
 	startCountdown: (data: EmitStartCountdownArgs) => void;
 	join: (roomName: string) => void;
-  timerRequest: (data: EmitTimerRequestArgs) => void;
-  pauseCountdown: (data: EmitTPauseArgs) => void;
+	timerRequest: (data: EmitTimerRequestArgs) => void;
+	pauseCountdown: (data: EmitTPauseArgs) => void;
 }
 
 // io.on

@@ -15,7 +15,7 @@ import {
 	SocketData,
 	EmitStartCountdownArgs,
 	EmitTimerRequestArgs,
-  EmitTPauseArgs,
+	EmitTPauseArgs,
 } from "./common/types/socket/types";
 
 const app = express();
@@ -153,40 +153,40 @@ io.on("connection", (socket) => {
 		socket.leave(roomName);
 	});
 
-  // handle requests to start a countdown
-  socket.on(
-    "startCountdown",
-    // eslint-disable-next-line no-shadow
-    ({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
-      console.log({ roomName, durationInSeconds });
-      if (roomName !== "default") {
-        timerStore[roomName].isPaused = false;
-        startCountdown({ roomName, durationInSeconds, io, timerStore });
-      }
-    }
-  );
+	// handle requests to start a countdown
+	socket.on(
+		"startCountdown",
+		// eslint-disable-next-line no-shadow
+		({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
+			console.log({ roomName, durationInSeconds });
+			if (roomName !== "default") {
+				timerStore[roomName].isPaused = false;
+				startCountdown({ roomName, durationInSeconds, io, timerStore });
+			}
+		}
+	);
 
 	// eslint-disable-next-line no-shadow
 	socket.on("timerRequest", ({ roomName }: EmitTimerRequestArgs) => {
 		timerRequest({ roomName, timerStore, socket });
 	});
 
-  // handle requests to pause a countdown
-  socket.on("pauseCountdown", ({ roomName }: EmitTPauseArgs) => {
-    console.log("pauseCountdown", roomName, timerStore[roomName]);
-    if (timerStore[roomName]) {
-      timerStore[roomName].isPaused === true
-        ? (timerStore[roomName].isPaused = false)
-        : (timerStore[roomName].isPaused = true);
-    } 
-    startCountdown({
-      roomName,
-      durationInSeconds: timerStore[roomName].secondsRemaining,
-      io,
-      timerStore,
-    });
-    timerRequest({ roomName, timerStore, socket });
-  });
+	// handle requests to pause a countdown
+	socket.on("pauseCountdown", ({ roomName }: EmitTPauseArgs) => {
+		console.log("pauseCountdown", roomName, timerStore[roomName]);
+		if (timerStore[roomName]) {
+			timerStore[roomName].isPaused === true
+				? (timerStore[roomName].isPaused = false)
+				: (timerStore[roomName].isPaused = true);
+		}
+		startCountdown({
+			roomName,
+			durationInSeconds: timerStore[roomName].secondsRemaining,
+			io,
+			timerStore,
+		});
+		timerRequest({ roomName, timerStore, socket });
+	});
 });
 
 export { io, httpServer, timerStore };
