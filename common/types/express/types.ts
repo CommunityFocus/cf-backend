@@ -1,6 +1,10 @@
+import { Request, Response } from "express";
 import { TimerStore } from "../types";
-import { Request } from "express";
 
 export interface RequestWithTimerStore extends Request {
-    timerStore?: TimerStore;
+	timerStore?: TimerStore;
 }
+
+export type ExpressRouteReturnType =
+	| Response<any, Record<string, any>>
+	| undefined;

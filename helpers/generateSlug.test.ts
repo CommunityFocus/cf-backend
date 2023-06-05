@@ -1,15 +1,15 @@
 import { options, generateSlug } from "./generateSlug";
 
-describe('generateSlug', () => {
-	describe('should generate a slug', () => {
-		test('should be a non-empty string', () => {
+describe("generateSlug", () => {
+	describe("should generate a slug", () => {
+		test("should be a non-empty string", () => {
 			const slug = generateSlug();
 
-			expect(typeof slug).toBe('string');
-			expect(slug).not.toEqual('');
+			expect(typeof slug).toBe("string");
+			expect(slug).not.toEqual("");
 		});
 
-		test('that contains 3 words', () => {
+		test("that contains 3 words", () => {
 			const wordRegex = /[A-Za-z]+/g;
 			const slug = generateSlug();
 			const wordParts = slug.match(wordRegex);
@@ -17,7 +17,7 @@ describe('generateSlug', () => {
 			expect(wordParts?.length).toEqual(3);
 		});
 
-		test('that is kebab-case', () => {
+		test("that is kebab-case", () => {
 			const wordRegex = /^[A-Za-z]+(-[A-Za-z]+){2,3}$/g;
 			const slug = generateSlug();
 			const slugIsKebab = wordRegex.test(slug);
@@ -26,24 +26,24 @@ describe('generateSlug', () => {
 		});
 	});
 
-	describe('options should not contain', () => {
-		test('appearances', () => {
-			expect(options.categories!.adjective).not.toContain('appearance');
+	describe("options should not contain", () => {
+		test("appearances", () => {
+			expect(options.categories!.adjective).not.toContain("appearance");
 		});
-		test('color', () => {
-			expect(options.categories!.adjective).not.toContain('appearance');
+		test("color", () => {
+			expect(options.categories!.adjective).not.toContain("appearance");
 		});
-		test('family', () => {
-			expect(options.categories!.noun).not.toContain('family');
+		test("family", () => {
+			expect(options.categories!.noun).not.toContain("family");
 		});
-		test('people', () => {
-			expect(options.categories!.noun).not.toContain('people');
+		test("people", () => {
+			expect(options.categories!.noun).not.toContain("people");
 		});
-		test('profession', () => {
-			expect(options.categories!.noun).not.toContain('profession');
+		test("profession", () => {
+			expect(options.categories!.noun).not.toContain("profession");
 		});
-		test('religion', () => {
-			expect(options.categories!.noun).not.toContain('religion');
+		test("religion", () => {
+			expect(options.categories!.noun).not.toContain("religion");
 		});
 	});
 });
