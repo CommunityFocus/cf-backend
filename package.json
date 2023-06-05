@@ -15,7 +15,7 @@
     "build:ci": "npm i && npm run build",
     "dev": "npx tsc && concurrently \"npx tsc --watch\" \"nodemon dist/server.js\"",
     "dev:skip-tests": "npx tsc && concurrently \"npx tsc --watch --project tsconfig.skip-tests.json\" \"nodemon dist/server.js\"",
-    "test": "jest --watchAll --verbose --coverage",
+    "test": "rm -rf dist && jest --watchAll --verbose --coverage",
     "test:ci": "jest --ci --verbose --coverage",
     "build:package": "rm -rf node_modules && rm package-lock.json && npm i",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",

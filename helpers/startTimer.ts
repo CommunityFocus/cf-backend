@@ -46,20 +46,22 @@ const startCountdown = ({
 
 	// eslint-disable-next-line no-param-reassign
 	timerStore[roomName].timer = setInterval(() => {
-		if (timerStore[roomName].secondsRemaining <= 0) {
-			clearInterval(timerStore[roomName].timer);
-			// eslint-disable-next-line no-param-reassign
-			timerStore[roomName].secondsRemaining = 0;
-		} else {
-			remainingTime--;
-			// eslint-disable-next-line no-param-reassign
-			timerStore[roomName].secondsRemaining = remainingTime;
+		if (!timerStore[roomName].isPaused) {
+			if (timerStore[roomName].secondsRemaining <= 0) {
+				clearInterval(timerStore[roomName].timer);
+				// eslint-disable-next-line no-param-reassign
+				timerStore[roomName].secondsRemaining = 0;
+			} else {
+				remainingTime--;
+				// eslint-disable-next-line no-param-reassign
+				timerStore[roomName].secondsRemaining = remainingTime;
+			}
 		}
 	}, 1000);
 
 	io.to(roomName).emit("timerResponse", {
 		secondsRemaining: remainingTime,
-		isPaused: false,
+		isPaused: timerStore[roomName].isPaused,
 	});
 };
 

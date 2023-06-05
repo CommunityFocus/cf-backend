@@ -26,6 +26,7 @@ describe("startCountdown", () => {
 			timerStore = {
 				[roomName]: {
 					timer: mockTimer,
+					isPaused: false,
 				},
 			};
 		});
@@ -258,6 +259,37 @@ describe("startCountdown", () => {
 							secondsRemaining: 10,
 							isPaused: false,
 						});
+					});
+				});
+			});
+
+			describe("when the timer is paused", () => {
+				describe("when the timer is paused before the timer is started", () => {
+					it("should not decrement the secondsRemaining", () => {
+						timerStore[roomName].isPaused = true;
+						startCountdown({
+							roomName,
+							durationInSeconds: 10,
+							io: io as any,
+							timerStore: timerStore as any,
+						});
+						jest.advanceTimersByTime(1000);
+						expect(timerStore[roomName].secondsRemaining).toEqual(
+							10
+						);
+					});
+
+					it("should not clear the timer", () => {
+						timerStore[roomName].isPaused = true;
+						startCountdown({
+							roomName,
+							durationInSeconds: 10,
+							io: io as any,
+							timerStore: timerStore as any,
+						});
+						jest.advanceTimersByTime(1000);
+						// should only be called once when the timer is started
+						expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
 					});
 				});
 			});
