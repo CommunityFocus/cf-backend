@@ -14,8 +14,7 @@ import {
 	ServerToClientEvents,
 	SocketData,
 	EmitStartCountdownArgs,
-	EmitTimerRequestArgs,
-	EmitTPauseArgs,
+	EmitWithRoomNameArgs,
 } from "./common/types/socket/types";
 
 const app = express();
@@ -61,6 +60,7 @@ const io = new Server<
  *    secondsRemaining: number,
  *    isPaused: boolean,
  *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
+ *    originalDuration: number // Original duration of the timer in seconds for resetting the timer
  *    }
  * }
  */
@@ -87,6 +87,7 @@ io.on("connection", (socket) => {
 			timer: undefined,
 			secondsRemaining: 0,
 			isPaused: false,
+			originalDuration: 0,
 		};
 	}
 	// console.log("timerStore", timerStore);
@@ -161,18 +162,19 @@ io.on("connection", (socket) => {
 			console.log({ roomName, durationInSeconds });
 			if (roomName !== "default") {
 				timerStore[roomName].isPaused = false;
+				timerStore[roomName].originalDuration = durationInSeconds;
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
 			}
 		}
 	);
 
 	// eslint-disable-next-line no-shadow
-	socket.on("timerRequest", ({ roomName }: EmitTimerRequestArgs) => {
+	socket.on("timerRequest", ({ roomName }: EmitWithRoomNameArgs) => {
 		timerRequest({ roomName, timerStore, socket });
 	});
 
 	// handle requests to pause a countdown
-	socket.on("pauseCountdown", ({ roomName }: EmitTPauseArgs) => {
+	socket.on("pauseCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
 		console.log("pauseCountdown", roomName, timerStore[roomName]);
 		if (timerStore[roomName]) {
 			timerStore[roomName].isPaused === true
@@ -186,6 +188,19 @@ io.on("connection", (socket) => {
 			timerStore,
 		});
 		timerRequest({ roomName, timerStore, socket });
+	});
+
+	socket.on("resetCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
+		if(roomName !== "default") {
+			timerStore[roomName].isPaused = false;
+			startCountdown({
+				roomName,
+				durationInSeconds: timerStore[roomName].originalDuration,
+				io,
+				timerStore,
+			});
+			timerRequest({ roomName, timerStore, socket });
+		}
 	});
 });
 

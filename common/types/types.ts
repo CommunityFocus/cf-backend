@@ -5,5 +5,6 @@ export interface TimerStore {
 		secondsRemaining: number;
 		isPaused: boolean;
 		destroyTimer?: NodeJS.Timeout;
+		originalDuration: number;
 	};
 }
