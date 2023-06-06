@@ -174,8 +174,10 @@ io.on("connection", (socket) => {
 	});
 
 	// handle requests to pause a countdown
+	// eslint-disable-next-line no-shadow
 	socket.on("pauseCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
 		if (timerStore[roomName]) {
+			// eslint-disable-next-line no-unused-expressions
 			timerStore[roomName].isPaused === true
 				? (timerStore[roomName].isPaused = false)
 				: (timerStore[roomName].isPaused = true);
@@ -189,8 +191,9 @@ io.on("connection", (socket) => {
 		timerRequest({ roomName, timerStore, socket });
 	});
 
+	// eslint-disable-next-line no-shadow
 	socket.on("resetCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
-		if(roomName !== "default") {
+		if (roomName !== "default") {
 			timerStore[roomName].isPaused = false;
 			startCountdown({
 				roomName,
