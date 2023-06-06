@@ -175,7 +175,6 @@ io.on("connection", (socket) => {
 
 	// handle requests to pause a countdown
 	socket.on("pauseCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
-		console.log("pauseCountdown", roomName, timerStore[roomName]);
 		if (timerStore[roomName]) {
 			timerStore[roomName].isPaused === true
 				? (timerStore[roomName].isPaused = false)
