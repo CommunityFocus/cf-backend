@@ -15,6 +15,7 @@ import {
 	SocketData,
 	EmitStartCountdownArgs,
 	EmitTimerRequestArgs,
+	EmitTPauseArgs,
 } from "./common/types/socket/types";
 
 const app = express();
@@ -159,6 +160,7 @@ io.on("connection", (socket) => {
 		({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
 			console.log({ roomName, durationInSeconds });
 			if (roomName !== "default") {
+				timerStore[roomName].isPaused = false;
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
 			}
 		}
@@ -170,12 +172,21 @@ io.on("connection", (socket) => {
 	});
 
 	// handle requests to pause a countdown
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	socket.on("pauseCountdown", () => {});
-
-	// handle requests to unpause a countdown
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	socket.on("unpauseCountdown", () => {});
+	socket.on("pauseCountdown", ({ roomName }: EmitTPauseArgs) => {
+		console.log("pauseCountdown", roomName, timerStore[roomName]);
+		if (timerStore[roomName]) {
+			timerStore[roomName].isPaused === true
+				? (timerStore[roomName].isPaused = false)
+				: (timerStore[roomName].isPaused = true);
+		}
+		startCountdown({
+			roomName,
+			durationInSeconds: timerStore[roomName].secondsRemaining,
+			io,
+			timerStore,
+		});
+		timerRequest({ roomName, timerStore, socket });
+	});
 });
 
 export { io, httpServer, timerStore };
