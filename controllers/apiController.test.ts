@@ -46,12 +46,14 @@ describe("apiController", () => {
 					timer: undefined,
 					secondsRemaining: 0,
 					isPaused: false,
+					originalDuration: 0,
 				},
 				"second-room-name": {
 					users: [],
 					timer: undefined,
 					secondsRemaining: 0,
 					isPaused: false,
+					originalDuration: 0,
 				},
 			};
 
@@ -83,6 +85,7 @@ describe("apiController", () => {
 					timer: undefined,
 					secondsRemaining: 0,
 					isPaused: false,
+					originalDuration: 0,
 				},
 			};
 			generateSlugMock.mockReturnValue("test");
