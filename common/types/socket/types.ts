@@ -16,7 +16,14 @@ export interface EmitTimerResponseArgs {
 
 // all emit events
 export interface ServerToClientEvents {
-	usersInRoom: (numUsers: number) => void;
+	usersInRoom: ({
+		numUsers,
+		userList,
+	}: {
+		numUsers: number;
+		userList: string[];
+	}) => void;
+
 	timerResponse: (data: EmitTimerResponseArgs) => void;
 }
 
