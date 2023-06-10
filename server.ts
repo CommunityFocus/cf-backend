@@ -80,6 +80,8 @@ io.on("connection", (socket) => {
 	// get the room name from the query string. Example of roomName: "/:room"
 	const roomName = socket.handshake.query.roomName as string;
 
+	io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
+
 	// if there's no roomName property for this room, create one
 	if (!timerStore[roomName]) {
 		timerStore[roomName] = {
@@ -149,6 +151,8 @@ io.on("connection", (socket) => {
 				);
 			}
 		}
+
+		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
 
 		// leave the room
 		socket.leave(roomName);

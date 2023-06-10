@@ -23,7 +23,7 @@ export interface ServerToClientEvents {
 		numUsers: number;
 		userList: string[];
 	}) => void;
-
+	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
 }
 
