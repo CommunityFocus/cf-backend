@@ -110,10 +110,10 @@ io.on("connection", (socket) => {
 			timerStore[roomName].users.push(socket.id);
 
 			// emit the updated number of users in the room
-			io.to(roomName).emit(
-				"usersInRoom",
-				timerStore[roomName].users.length
-			);
+			io.to(roomName).emit("usersInRoom", {
+				numUsers: timerStore[roomName].users.length,
+				userList: timerStore[roomName].users,
+			});
 
 			console.log(`User ${socket.id} joined room ${roomName}`);
 		}
@@ -132,10 +132,10 @@ io.on("connection", (socket) => {
 			console.log(`User ${socket.id} disconnected from room ${roomName}`);
 
 			// emit the updated number of users in the room
-			io.to(roomName).emit(
-				"usersInRoom",
-				timerStore[roomName].users.length
-			);
+			io.to(roomName).emit("usersInRoom", {
+				numUsers: timerStore[roomName].users.length,
+				userList: timerStore[roomName].users,
+			});
 
 			if (timerStore[roomName].users.length === 0) {
 				// if there are no users left in the room, clear the timer and delete the room after a delay
