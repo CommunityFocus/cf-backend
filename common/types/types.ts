@@ -6,5 +6,6 @@ export interface TimerStore {
 		isPaused: boolean;
 		destroyTimer?: NodeJS.Timeout;
 		originalDuration: number;
+		heartbeatCounter: number;
 	};
 }

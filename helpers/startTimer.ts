@@ -55,6 +55,23 @@ const startCountdown = ({
 				remainingTime--;
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].secondsRemaining = remainingTime;
+
+				/**
+				 * Send a heartbeat every 10 seconds. This is to prevent the timer from getting out of sync.
+				 * Avoid sending a heartbeat in the last 20 seconds of the timer to avoid any jumps in the timer
+				 */
+
+				// eslint-disable-next-line no-param-reassign
+				timerStore[roomName].heartbeatCounter++;
+				if (
+					timerStore[roomName].secondsRemaining > 20 &&
+					timerStore[roomName].heartbeatCounter % 10 === 0
+				) {
+					io.to(roomName).emit("timerResponse", {
+						secondsRemaining: remainingTime,
+						isPaused: timerStore[roomName].isPaused,
+					});
+				}
 			}
 		}
 	}, 1000);

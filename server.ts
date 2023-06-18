@@ -90,6 +90,7 @@ io.on("connection", (socket) => {
 			secondsRemaining: 0,
 			isPaused: false,
 			originalDuration: 0,
+			heartbeatCounter: 0,
 		};
 	}
 	// console.log("timerStore", timerStore);
