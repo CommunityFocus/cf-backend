@@ -38,6 +38,8 @@ const startCountdown = ({
 	// clear the existing timer if it exists
 	if (timerStore[roomName].timer) {
 		clearInterval(timerStore[roomName].timer);
+		// eslint-disable-next-line no-param-reassign
+		timerStore[roomName].heartbeatCounter = 0;
 	}
 
 	// eslint-disable-next-line no-param-reassign, no-multi-assign
