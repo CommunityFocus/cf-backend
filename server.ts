@@ -69,7 +69,7 @@ const timerStore: TimerStore = {};
 // routes
 app.get("/", (req: Request, res: Response) => {
 	res.status(200).json({
-		msg: "Welcome to time-share-v2. Please see https://github.com/nmpereira/time-share-v2",
+		msg: "Welcome to CommunintyFocus. Please see https://communityfocus.app/. If developing locally, please go to http://127.0.0.1:5100/",
 	});
 });
 
