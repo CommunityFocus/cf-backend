@@ -16,6 +16,8 @@ import {
 	EmitStartCountdownArgs,
 	EmitWithRoomNameArgs,
 } from "./common/types/socket/types";
+import connectDB from "./common/models/connectDB";
+import { findTimer, writeToDb } from "./common/models/dbHelpers";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -38,6 +40,9 @@ httpServer.listen(PORT, () => {
 		}`
 	);
 });
+
+// connect to database
+connectDB();
 
 const io = new Server<
 	ClientToServerEvents,
@@ -102,11 +107,50 @@ io.on("connection", (socket) => {
 	}
 
 	// eslint-disable-next-line no-shadow
-	socket.on("join", (roomName: string) => {
+	socket.on("join", async (roomName: string) => {
 		// join the room
 		socket.join(roomName);
 
 		if (timerStore[roomName] && roomName !== "default") {
+			if (!timerStore[roomName].timer) {
+				const timerData = await findTimer({ roomName });
+				if (timerData) {
+					// timeRemaining a continued countdown from endTimestamp to now
+					const timeRemaining = Math.floor(
+						(timerData.endTimestamp.getTime() - Date.now()) / 1000
+					);
+
+					const timeRemainingFromPaused =
+						!!timerData.pausedAt &&
+						Math.floor(
+							(timerData.endTimestamp.getTime() -
+								timerData.pausedAt.getTime()) /
+								1000
+						);
+
+					console.log(
+						"timeRemaining",
+						timeRemaining,
+						timeRemainingFromPaused
+					);
+					timerStore[roomName].secondsRemaining =
+						timerData.isPaused && timeRemainingFromPaused
+							? timeRemainingFromPaused
+							: timeRemaining;
+					timerStore[roomName].isPaused = timerData.isPaused || false;
+					timerStore[roomName].originalDuration =
+						timerData.originalDuration;
+
+					startCountdown({
+						roomName,
+						durationInSeconds:
+							timerStore[roomName].secondsRemaining,
+						io,
+						timerStore,
+					});
+				}
+			}
+
 			// add the user to the room
 			timerStore[roomName].users.push(socket.id);
 
@@ -163,11 +207,20 @@ io.on("connection", (socket) => {
 	socket.on(
 		"startCountdown",
 		// eslint-disable-next-line no-shadow
-		({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
+		async ({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
 			console.log({ roomName, durationInSeconds });
 			if (roomName !== "default") {
 				timerStore[roomName].isPaused = false;
 				timerStore[roomName].originalDuration = durationInSeconds;
+				await writeToDb({
+					roomName,
+					isPaused: timerStore[roomName].isPaused,
+					isBreak: false,
+					endTimestamp: new Date(
+						Date.now() + durationInSeconds * 1000
+					),
+					pausedAt: undefined,
+				});
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
 			}
 		}
@@ -180,13 +233,23 @@ io.on("connection", (socket) => {
 
 	// handle requests to pause a countdown
 	// eslint-disable-next-line no-shadow
-	socket.on("pauseCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
+	socket.on("pauseCountdown", async ({ roomName }: EmitWithRoomNameArgs) => {
 		if (timerStore[roomName]) {
 			// eslint-disable-next-line no-unused-expressions
 			timerStore[roomName].isPaused === true
 				? (timerStore[roomName].isPaused = false)
 				: (timerStore[roomName].isPaused = true);
 		}
+
+		await writeToDb({
+			roomName,
+			isPaused: timerStore[roomName].isPaused,
+			isBreak: false,
+			pausedAt: timerStore[roomName].isPaused ? new Date() : undefined,
+			endTimestamp: new Date(
+				Date.now() + timerStore[roomName].secondsRemaining * 1000
+			),
+		});
 		startCountdown({
 			roomName,
 			durationInSeconds: timerStore[roomName].secondsRemaining,
@@ -197,9 +260,18 @@ io.on("connection", (socket) => {
 	});
 
 	// eslint-disable-next-line no-shadow
-	socket.on("resetCountdown", ({ roomName }: EmitWithRoomNameArgs) => {
+	socket.on("resetCountdown", async ({ roomName }: EmitWithRoomNameArgs) => {
 		if (roomName !== "default") {
 			timerStore[roomName].isPaused = false;
+			await writeToDb({
+				roomName,
+				isPaused: timerStore[roomName].isPaused,
+				isBreak: false,
+				endTimestamp: new Date(
+					Date.now() + timerStore[roomName].secondsRemaining * 1000
+				),
+				pausedAt: undefined,
+			});
 			startCountdown({
 				roomName,
 				durationInSeconds: timerStore[roomName].originalDuration,
