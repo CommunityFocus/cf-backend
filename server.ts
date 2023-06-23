@@ -219,6 +219,7 @@ io.on("connection", (socket) => {
 						Date.now() + durationInSeconds * 1000
 					),
 					pausedAt: undefined,
+					originalDuration: timerStore[roomName].originalDuration,
 				});
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
 			}
@@ -267,7 +268,7 @@ io.on("connection", (socket) => {
 				isPaused: timerStore[roomName].isPaused,
 				isBreak: false,
 				endTimestamp: new Date(
-					Date.now() + timerStore[roomName].secondsRemaining * 1000
+					Date.now() + timerStore[roomName].originalDuration * 1000
 				),
 				pausedAt: undefined,
 			});
