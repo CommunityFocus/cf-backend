@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Timer from "./timer";
+import { ServerType } from "../types/socket/types";
 
 export interface TimerModel {
 	roomName: string;
@@ -36,6 +37,36 @@ export const findTimer = async ({
 	}
 
 	return dbResponse.endTimestamp > new Date() ? dbResponse : undefined;
+};
+
+export const modifyUpdateLog = async ({
+	roomName,
+	message,
+	user,
+	io,
+}: {
+	roomName: string;
+	message: string;
+	user: string;
+	io: ServerType;
+}): Promise<mongoose.UpdateWriteOpResult> => {
+	io.to(roomName).emit("updateLog", {
+		message,
+		user,
+		timestamp: new Date(),
+	});
+	return Timer.updateOne(
+		{ roomName },
+		{
+			$push: {
+				updateLog: {
+					timestamp: new Date(),
+					message,
+					user,
+				},
+			},
+		}
+	);
 };
 
 export const writeToDb = async ({

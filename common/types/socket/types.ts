@@ -19,11 +19,18 @@ export interface EmitUsersInRoomArgs {
 	userList: string[];
 }
 
+export interface EmitUpdateLogArgs {
+	timestamp: Date;
+	message: string;
+	user: string;
+}
+
 // all emit events
 export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
+	updateLog: (data: EmitUpdateLogArgs) => void;
 }
 
 // socket.on

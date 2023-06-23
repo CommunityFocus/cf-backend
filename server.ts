@@ -17,7 +17,11 @@ import {
 	EmitWithRoomNameArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
-import { findTimer, writeToDb } from "./common/models/dbHelpers";
+import {
+	findTimer,
+	modifyUpdateLog,
+	writeToDb,
+} from "./common/models/dbHelpers";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -147,6 +151,15 @@ io.on("connection", (socket) => {
 						io,
 						timerStore,
 					});
+				} else {
+					await writeToDb({
+						roomName,
+						isPaused: false,
+						isBreak: false,
+						endTimestamp: new Date(),
+						pausedAt: undefined,
+						originalDuration: 0,
+					});
 				}
 			}
 
@@ -160,6 +173,13 @@ io.on("connection", (socket) => {
 			});
 
 			console.log(`User ${socket.id} joined room ${roomName}`);
+
+			await modifyUpdateLog({
+				roomName,
+				message: "joined room",
+				user: socket.id,
+				io,
+			});
 		}
 	});
 
@@ -167,7 +187,7 @@ io.on("connection", (socket) => {
 		`User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
 	);
 
-	socket.on("disconnect", () => {
+	socket.on("disconnect", async () => {
 		if (timerStore[roomName] && roomName !== "default") {
 			// remove the user from the room
 			timerStore[roomName].users = timerStore[roomName].users.filter(
@@ -198,6 +218,13 @@ io.on("connection", (socket) => {
 
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
 
+		await modifyUpdateLog({
+			roomName,
+			message: "left the room",
+			user: socket.id,
+			io,
+		});
+
 		// leave the room
 		socket.leave(roomName);
 	});
@@ -220,6 +247,12 @@ io.on("connection", (socket) => {
 					),
 					pausedAt: undefined,
 					originalDuration: timerStore[roomName].originalDuration,
+				});
+				await modifyUpdateLog({
+					roomName,
+					message: `started a ${durationInSeconds / 60} minute timer`,
+					user: socket.id,
+					io,
 				});
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
 			}
@@ -257,6 +290,15 @@ io.on("connection", (socket) => {
 			timerStore,
 		});
 		timerRequest({ roomName, timerStore, socket });
+
+		await modifyUpdateLog({
+			roomName,
+			message: `${
+				timerStore[roomName].isPaused ? "paused" : "unpaused"
+			} the timer`,
+			user: socket.id,
+			io,
+		});
 	});
 
 	// eslint-disable-next-line no-shadow
@@ -279,6 +321,12 @@ io.on("connection", (socket) => {
 				timerStore,
 			});
 			timerRequest({ roomName, timerStore, socket });
+			await modifyUpdateLog({
+				roomName,
+				message: `reset the timer`,
+				user: socket.id,
+				io,
+			});
 		}
 	});
 });
