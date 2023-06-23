@@ -47,6 +47,7 @@ describe("apiController", () => {
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
+					heartbeatCounter: 0,
 				},
 				"second-room-name": {
 					users: [],
@@ -54,6 +55,7 @@ describe("apiController", () => {
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
+					heartbeatCounter: 0,
 				},
 			};
 
@@ -86,6 +88,7 @@ describe("apiController", () => {
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
+					heartbeatCounter: 0,
 				},
 			};
 			generateSlugMock.mockReturnValue("test");

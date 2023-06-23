@@ -200,6 +200,78 @@ describe("startCountdown", () => {
 						);
 					});
 
+					it("should emit a timerResponse event (heartbeat) to the room 10 seconds", () => {
+						startCountdown({
+							roomName,
+							durationInSeconds: 100,
+							io: io as any,
+							timerStore: timerStore as any,
+						});
+
+						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+							secondsRemaining: 100,
+							isPaused: false,
+						});
+
+						// clear the mock call so we can check the next call
+						io.emit.mockClear();
+
+						jest.advanceTimersByTime(1000);
+						// 1 second has passed, so the timerResponse event should not be emitted
+						expect(io.emit).not.toHaveBeenCalled();
+
+						jest.advanceTimersByTime(9000);
+						// 10 seconds have passed, so the timerResponse event should be emitted
+						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+							secondsRemaining: 90,
+							isPaused: false,
+						});
+
+						io.emit.mockClear();
+
+						jest.advanceTimersByTime(1000);
+						// 11 seconds have passed, so the timerResponse event should not be emitted
+						expect(io.emit).not.toHaveBeenCalled();
+
+						jest.advanceTimersByTime(9000);
+
+						// 20 seconds have passed, so the timerResponse event should be emitted
+						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+							secondsRemaining: 80,
+							isPaused: false,
+						});
+					});
+
+					it("should not emit the timerResponse event (heartbeat) to the room if the timer is under 20 seconds", () => {
+						startCountdown({
+							roomName,
+							durationInSeconds: 35,
+							io: io as any,
+							timerStore: timerStore as any,
+						});
+
+						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+							secondsRemaining: 35,
+							isPaused: false,
+						});
+
+						// clear the mock call so we can check the next call
+						io.emit.mockClear();
+
+						jest.advanceTimersByTime(10000);
+						// 10 seconds have passed, so the timerResponse event should be emitted since it is over 20 seconds. i.e. 35 - 10 = 25 seconds remaining
+						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
+							secondsRemaining: 25,
+							isPaused: false,
+						});
+
+						io.emit.mockClear();
+
+						jest.advanceTimersByTime(10000);
+						// 20 seconds have passed, so the timerResponse event should be emitted since it is under 20 seconds. i.e. 35 - 20 = 15 seconds remaining
+						expect(io.emit).not.toHaveBeenCalled();
+					});
+
 					describe("when the secondsRemaining is 0", () => {
 						it("should clear the timer once the setInterval has started", () => {
 							startCountdown({
@@ -244,7 +316,7 @@ describe("startCountdown", () => {
 						});
 					});
 
-					it("should not emit a timerResponse event to the room more than once", () => {
+					it("should not emit a timerResponse event to the room more than once (unless its a heartbeat)", () => {
 						startCountdown({
 							roomName,
 							durationInSeconds: 10,
