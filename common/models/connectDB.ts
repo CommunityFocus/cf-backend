@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import DB_SHARED from "./db_default";
+import DB_SHARED from "./dbDefault";
 
 dotenv.config();
 

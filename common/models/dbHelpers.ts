@@ -55,7 +55,7 @@ export const writeToDb = async ({
 		},
 	};
 
-	console.log("writeToDb", query, update);
+	console.log("writeToDb", { query, update });
 
 	return Timer.findOneAndUpdate(query, update, {
 		upsert: true,
