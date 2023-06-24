@@ -15,8 +15,7 @@ import {
 	SocketData,
 	EmitStartCountdownArgs,
 	EmitWithRoomNameArgs,
-	EmitBreakTimerArgs,
-	EmitWorkTimerArgs,
+	EmitWorkBreakTimerArgs
 } from "./common/types/socket/types";
 
 const app = express();
@@ -213,20 +212,16 @@ io.on("connection", (socket) => {
 	});
 
 	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
-	socket.on("breakTimer", (breakTimer: EmitBreakTimerArgs) => {
-		console.log("-------------------");
-		console.log("Console log from the 'breakTimer' emit event");
-		console.log({
+	socket.on("breakTimer", (breakTimer: EmitWorkBreakTimerArgs) => {
+		console.log("Console log from the 'breakTimer' emit event", {
 			Username: `Client's user name is ${breakTimer.userName}`,
 			roomName: `Client's roomName is ${breakTimer.roomName}`,
 		});
 	});
 
 	// handler workTimer : on emit of "workTimer" from the cf-frontend
-	socket.on("workTimer", (workTimer: EmitWorkTimerArgs) => {
-		console.log("-------------------");
-		console.log("Console log from the 'workTimer' emit event");
-		console.log({
+	socket.on("workTimer", (workTimer: EmitWorkBreakTimerArgs) => {
+		console.log("Console log from the 'workTimer' emit event", {
 			Username: `Client's user name is ${workTimer.userName}`,
 			roomName: `Client's roomName is ${workTimer.roomName}`,
 		});
