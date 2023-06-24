@@ -4,6 +4,7 @@ export interface TimerStore {
 		timer: NodeJS.Timeout | undefined;
 		secondsRemaining: number;
 		isPaused: boolean;
+		isBreak: boolean;
 		destroyTimer?: NodeJS.Timeout;
 		originalDuration: number;
 		heartbeatCounter: number;

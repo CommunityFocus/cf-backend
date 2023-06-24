@@ -8,12 +8,12 @@ interface StartCountdownArgs {
 	timerStore: TimerStore;
 }
 
-const startCountdown = ({
+const startCountdown = async ({
 	roomName,
 	durationInSeconds,
 	io,
 	timerStore,
-}: StartCountdownArgs): void => {
+}: StartCountdownArgs): Promise<void> => {
 	if (!roomName || !timerStore || !timerStore[roomName]) {
 		console.error(`Room ${roomName} does not exist. Failed to start timer`);
 		return;
