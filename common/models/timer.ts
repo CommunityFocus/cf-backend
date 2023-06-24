@@ -8,12 +8,10 @@ const timerSchema = new mongoose.Schema({
 	isPaused: {
 		type: Boolean,
 		required: true,
-		default: false,
 	},
 	isBreak: {
 		type: Boolean,
 		required: true,
-		default: false,
 	},
 	endTimestamp: {
 		type: Date,

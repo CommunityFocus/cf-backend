@@ -17,7 +17,7 @@ import {
 	EmitWithRoomNameArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
-import { findTimer, writeToDb } from "./common/models/dbHelpers";
+import { readFromDb, writeToDb } from "./common/models/dbHelpers";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -64,6 +64,7 @@ const io = new Server<
  *    users:[socket.id, socket.id, socket.id]]
  *    secondsRemaining: number,
  *    isPaused: boolean,
+ * 	  isBreak: boolean,
  *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
  *    originalDuration: number // Original duration of the timer in seconds for resetting the timer
  *    }
@@ -94,6 +95,7 @@ io.on("connection", (socket) => {
 			timer: undefined,
 			secondsRemaining: 0,
 			isPaused: false,
+			isBreak: false,
 			originalDuration: 0,
 			heartbeatCounter: 0,
 		};
@@ -113,7 +115,7 @@ io.on("connection", (socket) => {
 
 		if (timerStore[roomName] && roomName !== "default") {
 			if (!timerStore[roomName].timer) {
-				const timerData = await findTimer({ roomName });
+				const timerData = await readFromDb({ roomName });
 				if (timerData) {
 					// timeRemaining a continued countdown from endTimestamp to now
 					const timeRemaining = Math.floor(
@@ -128,11 +130,6 @@ io.on("connection", (socket) => {
 								1000
 						);
 
-					console.log(
-						"timeRemaining",
-						timeRemaining,
-						timeRemainingFromPaused
-					);
 					timerStore[roomName].secondsRemaining =
 						timerData.isPaused && timeRemainingFromPaused
 							? timeRemainingFromPaused
@@ -147,6 +144,17 @@ io.on("connection", (socket) => {
 							timerStore[roomName].secondsRemaining,
 						io,
 						timerStore,
+					});
+				} else {
+					await writeToDb({
+						roomName,
+						isPaused: timerStore[roomName].isPaused,
+						isBreak: timerStore[roomName].isBreak,
+						endTimestamp: new Date(
+							Date.now() +
+								timerStore[roomName].secondsRemaining * 1000
+						),
+						originalDuration: timerStore[roomName].originalDuration,
 					});
 				}
 			}
@@ -215,11 +223,10 @@ io.on("connection", (socket) => {
 				await writeToDb({
 					roomName,
 					isPaused: timerStore[roomName].isPaused,
-					isBreak: false,
+					isBreak: timerStore[roomName].isBreak,
 					endTimestamp: new Date(
 						Date.now() + durationInSeconds * 1000
 					),
-					pausedAt: undefined,
 					originalDuration: timerStore[roomName].originalDuration,
 				});
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
@@ -245,7 +252,7 @@ io.on("connection", (socket) => {
 		await writeToDb({
 			roomName,
 			isPaused: timerStore[roomName].isPaused,
-			isBreak: false,
+			isBreak: timerStore[roomName].isBreak,
 			pausedAt: timerStore[roomName].isPaused ? new Date() : undefined,
 			endTimestamp: new Date(
 				Date.now() + timerStore[roomName].secondsRemaining * 1000
@@ -267,11 +274,10 @@ io.on("connection", (socket) => {
 			await writeToDb({
 				roomName,
 				isPaused: timerStore[roomName].isPaused,
-				isBreak: false,
+				isBreak: timerStore[roomName].isBreak,
 				endTimestamp: new Date(
 					Date.now() + timerStore[roomName].originalDuration * 1000
 				),
-				pausedAt: undefined,
 			});
 			startCountdown({
 				roomName,

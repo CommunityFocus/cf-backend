@@ -18,24 +18,14 @@ export const readFromDb = async ({
 	roomName: string;
 }): Promise<TimerModel | undefined> => {
 	const timer = await Timer.findOne({ roomName });
+
+	console.log("readFromDb", { roomName });
+
 	if (!timer) {
 		return undefined;
 	}
 
 	return timer;
-};
-
-export const findTimer = async ({
-	roomName,
-}: {
-	roomName: string;
-}): Promise<TimerModel | undefined> => {
-	const dbResponse = await readFromDb({ roomName });
-	if (!dbResponse) {
-		return undefined;
-	}
-
-	return dbResponse.endTimestamp > new Date() ? dbResponse : undefined;
 };
 
 export const writeToDb = async ({
