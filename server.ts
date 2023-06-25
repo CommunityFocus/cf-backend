@@ -15,6 +15,7 @@ import {
 	SocketData,
 	EmitStartCountdownArgs,
 	EmitWithRoomNameArgs,
+	EmitWorkBreakTimerArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
 import { readFromDb, writeToDb } from "./common/models/dbHelpers";
@@ -287,6 +288,22 @@ io.on("connection", (socket) => {
 			});
 			timerRequest({ roomName, timerStore, socket });
 		}
+	});
+
+	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
+	socket.on("breakTimer", (breakTimer: EmitWorkBreakTimerArgs) => {
+		console.log("Console log from the 'breakTimer' emit event", {
+			Username: `Client's user name is ${breakTimer.userName}`,
+			roomName: `Client's roomName is ${breakTimer.roomName}`,
+		});
+	});
+
+	// handler workTimer : on emit of "workTimer" from the cf-frontend
+	socket.on("workTimer", (workTimer: EmitWorkBreakTimerArgs) => {
+		console.log("Console log from the 'workTimer' emit event", {
+			Username: `Client's user name is ${workTimer.userName}`,
+			roomName: `Client's roomName is ${workTimer.roomName}`,
+		});
 	});
 });
 
