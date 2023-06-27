@@ -14,7 +14,7 @@ export interface TimerModel {
 	updateLog: mongoose.Types.DocumentArray<{
 		message: string;
 		user: string;
-		timestamp: Date;
+		time: Date;
 	}>;
 }
 
@@ -48,7 +48,7 @@ export const modifyUpdateLog = async ({
 	io.to(roomName).emit("updateLog", {
 		message,
 		user,
-		timestamp: new Date(),
+		time: new Date(),
 	});
 	const query = { roomName };
 	const update = {

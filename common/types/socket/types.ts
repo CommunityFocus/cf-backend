@@ -27,7 +27,7 @@ export interface EmitUsersInRoomArgs {
 export interface UpdateLog {
 	message: string;
 	user: string;
-	timestamp: Date;
+	time: Date;
 }
 
 export type UpdateLogArray = UpdateLog[];

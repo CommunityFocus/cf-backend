@@ -9,7 +9,7 @@ const updateLogSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	timestamp: {
+	time: {
 		type: Date,
 		required: true,
 		default: Date.now,
