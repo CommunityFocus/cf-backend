@@ -18,7 +18,11 @@ import {
 	EmitWorkBreakTimerArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
-import { readFromDb, writeToDb } from "./common/models/dbHelpers";
+import {
+	modifyUpdateLog,
+	readFromDb,
+	writeToDb,
+} from "./common/models/dbHelpers";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -115,8 +119,8 @@ io.on("connection", (socket) => {
 		socket.join(roomName);
 
 		if (timerStore[roomName] && roomName !== "default") {
+			const timerData = await readFromDb({ roomName });
 			if (!timerStore[roomName].timer) {
-				const timerData = await readFromDb({ roomName });
 				if (timerData) {
 					// timeRemaining a continued countdown from endTimestamp to now
 					const timeRemaining = Math.floor(
@@ -158,6 +162,13 @@ io.on("connection", (socket) => {
 						originalDuration: timerStore[roomName].originalDuration,
 					});
 				}
+
+				await modifyUpdateLog({
+					roomName,
+					message: `joined the room`,
+					user: socket.id,
+					io,
+				});
 			}
 
 			// add the user to the room
@@ -169,6 +180,10 @@ io.on("connection", (socket) => {
 				userList: timerStore[roomName].users,
 			});
 
+			io.to(roomName).emit("updateLogHistory", {
+				updateLog: timerData?.updateLog || [],
+			});
+
 			console.log(`User ${socket.id} joined room ${roomName}`);
 		}
 	});
@@ -177,7 +192,7 @@ io.on("connection", (socket) => {
 		`User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
 	);
 
-	socket.on("disconnect", () => {
+	socket.on("disconnect", async () => {
 		if (timerStore[roomName] && roomName !== "default") {
 			// remove the user from the room
 			timerStore[roomName].users = timerStore[roomName].users.filter(
@@ -208,6 +223,13 @@ io.on("connection", (socket) => {
 
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
 
+		await modifyUpdateLog({
+			roomName,
+			message: `left the room`,
+			user: socket.id,
+			io,
+		});
+
 		// leave the room
 		socket.leave(roomName);
 	});
@@ -231,6 +253,16 @@ io.on("connection", (socket) => {
 					originalDuration: timerStore[roomName].originalDuration,
 				});
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
+
+				// round the duration to the nearest minute
+				await modifyUpdateLog({
+					roomName,
+					message: `started a countdown for ${
+						(Math.round(durationInSeconds / 60) * 60) / 60
+					} minutes`,
+					user: socket.id,
+					io,
+				});
 			}
 		}
 	);
@@ -266,6 +298,15 @@ io.on("connection", (socket) => {
 			timerStore,
 		});
 		timerRequest({ roomName, timerStore, socket });
+
+		await modifyUpdateLog({
+			roomName,
+			message: `${
+				timerStore[roomName].isPaused ? "paused" : "unpaused"
+			} the countdown`,
+			user: socket.id,
+			io,
+		});
 	});
 
 	// eslint-disable-next-line no-shadow
@@ -287,22 +328,45 @@ io.on("connection", (socket) => {
 				timerStore,
 			});
 			timerRequest({ roomName, timerStore, socket });
+
+			await modifyUpdateLog({
+				roomName,
+				message: `reset the countdown to ${
+					timerStore[roomName].originalDuration / 60
+				} minutes`,
+				user: socket.id,
+				io,
+			});
 		}
 	});
 
 	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
-	socket.on("breakTimer", (breakTimer: EmitWorkBreakTimerArgs) => {
+	socket.on("breakTimer", async (breakTimer: EmitWorkBreakTimerArgs) => {
 		console.log("Console log from the 'breakTimer' emit event", {
 			Username: `Client's user name is ${breakTimer.userName}`,
 			roomName: `Client's roomName is ${breakTimer.roomName}`,
 		});
+
+		await modifyUpdateLog({
+			roomName,
+			message: `switched the timer to break mode`,
+			user: socket.id,
+			io,
+		});
 	});
 
 	// handler workTimer : on emit of "workTimer" from the cf-frontend
-	socket.on("workTimer", (workTimer: EmitWorkBreakTimerArgs) => {
+	socket.on("workTimer", async (workTimer: EmitWorkBreakTimerArgs) => {
 		console.log("Console log from the 'workTimer' emit event", {
 			Username: `Client's user name is ${workTimer.userName}`,
 			roomName: `Client's roomName is ${workTimer.roomName}`,
+		});
+
+		await modifyUpdateLog({
+			roomName,
+			message: `switched the timer to work mode`,
+			user: socket.id,
+			io,
 		});
 	});
 });

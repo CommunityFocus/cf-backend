@@ -24,11 +24,21 @@ export interface EmitUsersInRoomArgs {
 	userList: string[];
 }
 
+export interface UpdateLog {
+	message: string;
+	user: string;
+	timestamp: Date;
+}
+
+export type UpdateLogArray = UpdateLog[];
+
 // all emit events
 export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
+	updateLogHistory: (data: { updateLog: UpdateLogArray }) => void;
+	updateLog: (data: UpdateLog) => void;
 }
 
 // socket.on
