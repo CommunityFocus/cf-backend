@@ -180,8 +180,9 @@ io.on("connection", (socket) => {
 				userList: timerStore[roomName].users,
 			});
 
+			// send only 100 most recent updateLog messages
 			io.to(roomName).emit("updateLogHistory", {
-				updateLog: timerData?.updateLog || [],
+				updateLog: timerData?.updateLog.slice(-25) || [],
 			});
 
 			console.log(`User ${socket.id} joined room ${roomName}`);
