@@ -291,18 +291,38 @@ io.on("connection", (socket) => {
 	});
 
 	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
-	socket.on("breakTimer", (breakTimer: EmitWorkBreakTimerArgs) => {
-		console.log("Console log from the 'breakTimer' emit event", {
-			Username: `Client's user name is ${breakTimer.userName}`,
-			roomName: `Client's roomName is ${breakTimer.roomName}`,
-		});
-	});
+
+	socket.on(
+		"breakTimer",
+		// eslint-disable-next-line no-shadow
+		({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+			timerStore[roomName].isBreak = true;
+			io.to(roomName).emit("workBreakResponse", {
+				userName,
+				isBreakMode: timerStore[roomName].isBreak,
+			});
+			startCountdown({
+				roomName,
+				durationInSeconds: 0,
+				io,
+				timerStore,
+			});
+		}
+	);
 
 	// handler workTimer : on emit of "workTimer" from the cf-frontend
-	socket.on("workTimer", (workTimer: EmitWorkBreakTimerArgs) => {
-		console.log("Console log from the 'workTimer' emit event", {
-			Username: `Client's user name is ${workTimer.userName}`,
-			roomName: `Client's roomName is ${workTimer.roomName}`,
+	// eslint-disable-next-line no-shadow
+	socket.on("workTimer", ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+		timerStore[roomName].isBreak = false;
+		io.to(roomName).emit("workBreakResponse", {
+			userName,
+			isBreakMode: timerStore[roomName].isBreak,
+		});
+		startCountdown({
+			roomName,
+			durationInSeconds: 0,
+			io,
+			timerStore,
 		});
 	});
 });

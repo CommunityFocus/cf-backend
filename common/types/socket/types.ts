@@ -1,17 +1,19 @@
 import { Server } from "socket.io";
 
-export interface EmitWorkBreakTimerArgs {
-	userName: string;
-	roomName: string;
-}
-
-export interface EmitStartCountdownArgs {
-	roomName: string;
-	durationInSeconds: number;
-}
-
 export interface EmitWithRoomNameArgs {
 	roomName: string;
+}
+export interface EmitWorkBreakTimerArgs extends EmitWithRoomNameArgs {
+	userName: string;
+}
+
+export interface EmitWorkBreakResponseArgs {
+	userName: string;
+	isBreakMode: boolean;
+}
+
+export interface EmitStartCountdownArgs extends EmitWithRoomNameArgs {
+	durationInSeconds: number;
 }
 
 export interface EmitTimerResponseArgs {
@@ -29,6 +31,7 @@ export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
+	workBreakResponse: (data: EmitWorkBreakResponseArgs) => void;
 }
 
 // socket.on
