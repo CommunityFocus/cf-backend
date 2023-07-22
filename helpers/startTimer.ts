@@ -56,27 +56,13 @@ const startCountdown = async ({
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].secondsRemaining = 0;
 
-				console.log(
-					"durationInSeconds",
-					durationInSeconds,
-					"isBreak",
-					timerStore[roomName].isBreak
-				);
 				if (durationInSeconds > 1) {
 					if (timerStore[roomName].isBreak) {
 						// eslint-disable-next-line no-param-reassign
 						timerStore[roomName].isBreak = false;
-						console.log(
-							"isBreakFLIP",
-							timerStore[roomName].isBreak
-						);
 					} else {
 						// eslint-disable-next-line no-param-reassign
 						timerStore[roomName].isBreak = true;
-						console.log(
-							"isBreakFLIP",
-							timerStore[roomName].isBreak
-						);
 					}
 				}
 
