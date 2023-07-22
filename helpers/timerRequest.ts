@@ -30,6 +30,8 @@ const timerRequest = ({
 		socket.emit("timerResponse", {
 			secondsRemaining: timerStore[roomName].secondsRemaining,
 			isPaused: timerStore[roomName].isPaused,
+			isTimerRunning: timerStore[roomName].isTimerRunning,
+			isBreakMode: timerStore[roomName].isBreak,
 		});
 		return;
 	}
@@ -47,6 +49,8 @@ const timerRequest = ({
 		socket.emit("timerResponse", {
 			secondsRemaining: timerStore[roomName].secondsRemaining,
 			isPaused: timerStore[roomName].isPaused,
+			isTimerRunning: timerStore[roomName].isTimerRunning,
+			isBreakMode: timerStore[roomName].isBreak,
 		});
 		// eslint-disable-next-line no-use-before-define
 		clearInterval(updateChecker);
