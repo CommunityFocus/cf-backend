@@ -49,7 +49,6 @@ describe("apiController", () => {
 					originalDuration: 0,
 					heartbeatCounter: 0,
 					isBreak: false,
-					isTimerRunning: false,
 				},
 				"second-room-name": {
 					users: [],
@@ -59,7 +58,6 @@ describe("apiController", () => {
 					originalDuration: 0,
 					heartbeatCounter: 0,
 					isBreak: false,
-					isTimerRunning: false,
 				},
 			};
 
@@ -94,7 +92,6 @@ describe("apiController", () => {
 					originalDuration: 0,
 					heartbeatCounter: 0,
 					isBreak: false,
-					isTimerRunning: false,
 				},
 			};
 			generateSlugMock.mockReturnValue("test");

@@ -99,7 +99,6 @@ io.on("connection", (socket) => {
 			isBreak: false,
 			originalDuration: 0,
 			heartbeatCounter: 0,
-			isTimerRunning: false,
 		};
 	}
 	// console.log("timerStore", timerStore);

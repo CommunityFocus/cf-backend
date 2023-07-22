@@ -50,45 +50,10 @@ const startCountdown = async ({
 	timerStore[roomName].timer = setInterval(() => {
 		if (!timerStore[roomName].isPaused) {
 			if (timerStore[roomName].secondsRemaining <= 0) {
-				// eslint-disable-next-line no-param-reassign
-				timerStore[roomName].isTimerRunning = false;
 				clearInterval(timerStore[roomName].timer);
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].secondsRemaining = 0;
-
-				console.log(
-					"durationInSeconds",
-					durationInSeconds,
-					"isBreak",
-					timerStore[roomName].isBreak
-				);
-				if (durationInSeconds > 1) {
-					if (timerStore[roomName].isBreak) {
-						// eslint-disable-next-line no-param-reassign
-						timerStore[roomName].isBreak = false;
-						console.log(
-							"isBreakFLIP",
-							timerStore[roomName].isBreak
-						);
-					} else {
-						// eslint-disable-next-line no-param-reassign
-						timerStore[roomName].isBreak = true;
-						console.log(
-							"isBreakFLIP",
-							timerStore[roomName].isBreak
-						);
-					}
-				}
-
-				io.to(roomName).emit("timerResponse", {
-					secondsRemaining: timerStore[roomName].secondsRemaining,
-					isPaused: timerStore[roomName].isPaused,
-					isTimerRunning: timerStore[roomName].isTimerRunning,
-					isBreakMode: timerStore[roomName].isBreak,
-				});
 			} else {
-				// eslint-disable-next-line no-param-reassign
-				timerStore[roomName].isTimerRunning = true;
 				remainingTime--;
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].secondsRemaining = remainingTime;
@@ -105,29 +70,17 @@ const startCountdown = async ({
 					timerStore[roomName].heartbeatCounter % 10 === 0
 				) {
 					io.to(roomName).emit("timerResponse", {
-						secondsRemaining: timerStore[roomName].secondsRemaining,
+						secondsRemaining: remainingTime,
 						isPaused: timerStore[roomName].isPaused,
-						isTimerRunning: timerStore[roomName].isTimerRunning,
-						isBreakMode: timerStore[roomName].isBreak,
 					});
 				}
 			}
 		}
 	}, 1000);
 
-	if (timerStore[roomName].secondsRemaining <= 0) {
-		// eslint-disable-next-line no-param-reassign
-		timerStore[roomName].isTimerRunning = false;
-	} else {
-		// eslint-disable-next-line no-param-reassign
-		timerStore[roomName].isTimerRunning = true;
-	}
-
 	io.to(roomName).emit("timerResponse", {
-		secondsRemaining: timerStore[roomName].secondsRemaining,
+		secondsRemaining: remainingTime,
 		isPaused: timerStore[roomName].isPaused,
-		isTimerRunning: timerStore[roomName].isTimerRunning,
-		isBreakMode: timerStore[roomName].isBreak,
 	});
 };
 

@@ -19,8 +19,6 @@ export interface EmitStartCountdownArgs extends EmitWithRoomNameArgs {
 export interface EmitTimerResponseArgs {
 	secondsRemaining: number;
 	isPaused: boolean;
-	isTimerRunning: boolean;
-	isBreakMode: boolean;
 }
 
 export interface EmitUsersInRoomArgs {
