@@ -298,6 +298,7 @@ io.on("connection", (socket) => {
 		// eslint-disable-next-line no-shadow
 		({ roomName, userName }: EmitWorkBreakTimerArgs) => {
 			timerStore[roomName].isBreak = true;
+			timerStore[roomName].isPaused = false;
 			io.to(roomName).emit("workBreakResponse", {
 				userName,
 				isBreakMode: timerStore[roomName].isBreak,
@@ -315,6 +316,7 @@ io.on("connection", (socket) => {
 	// eslint-disable-next-line no-shadow
 	socket.on("workTimer", ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
 		timerStore[roomName].isBreak = false;
+		timerStore[roomName].isPaused = false;
 		io.to(roomName).emit("workBreakResponse", {
 			userName,
 			isBreakMode: timerStore[roomName].isBreak,

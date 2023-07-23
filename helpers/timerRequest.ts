@@ -20,9 +20,12 @@ const timerRequest = ({
 		!timerStore[roomName].secondsRemaining ||
 		typeof timerStore[roomName].secondsRemaining !== "number"
 	) {
-		console.error(
-			"timerStore[roomName].secondsRemaining is not a number, or is undefined | null"
-		);
+		socket.emit("timerResponse", {
+			secondsRemaining: 0,
+			isPaused: timerStore[roomName].isPaused,
+			isTimerRunning: timerStore[roomName].isTimerRunning,
+			isBreakMode: timerStore[roomName].isBreak,
+		});
 		return;
 	}
 
