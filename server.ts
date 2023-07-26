@@ -29,7 +29,15 @@ const httpServer = createServer(app);
 // middleware
 app.use(
 	cors({
-		origin: ["https://admin.socket.io"],
+		origin: [
+			"https://admin.socket.io",
+			"https://communityfocus.app",
+			"http://localhost:5100",
+			/* use regex to match all Netlify deploy preview URLs.
+			 * Example: https://deploy-preview-25--communityfocus.netlify.app/
+			 */
+			/https:\/\/deploy-preview-[0-9]+--communityfocus.netlify.app/,
+		],
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
 	})
@@ -59,6 +67,10 @@ const io = new Server<
 			"https://admin.socket.io",
 			"https://communityfocus.app",
 			"http://localhost:5100",
+			/* use regex to match all Netlify deploy preview URLs.
+			 * Example: https://deploy-preview-25--communityfocus.netlify.app/
+			 */
+			/https:\/\/deploy-preview-[0-9]+--communityfocus.netlify.app/,
 		],
 		credentials: true,
 	},
