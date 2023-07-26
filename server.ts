@@ -185,7 +185,6 @@ io.on("connection", (socket) => {
 	);
 
 	socket.on("changeUsername", ({ userName }: { userName: string }) => {
-		console.log("changeUsername", userName);
 		if (timerStore[roomName]) {
 			const oldUserName = socket.data.nickname;
 			console.log(
