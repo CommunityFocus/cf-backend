@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import cors from "cors";
+import { instrument } from "@socket.io/admin-ui";
 import startCountdown from "./helpers/startTimer";
 import { timerRequest } from "./helpers/timerRequest";
 import { destroyTimer } from "./helpers/destroyTimer";
@@ -28,8 +29,9 @@ const httpServer = createServer(app);
 // middleware
 app.use(
 	cors({
-		origin: "*",
+		origin: ["https://admin.socket.io"],
 		methods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
 	})
 );
 
@@ -53,7 +55,20 @@ const io = new Server<
 	SocketData
 >(httpServer, {
 	cors: {
-		origin: "*",
+		origin: [
+			"https://admin.socket.io",
+			"https://communityfocus.app",
+			"http://localhost:5100",
+		],
+		credentials: true,
+	},
+});
+
+instrument(io, {
+	auth: {
+		type: "basic",
+		username: "admin",
+		password: `${process.env.SOCKET_ADMIN_PASS}`,
 	},
 });
 
