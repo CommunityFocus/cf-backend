@@ -82,6 +82,7 @@ instrument(io, {
 		username: "admin",
 		password: `${process.env.SOCKET_ADMIN_PASS}`,
 	},
+	mode: "production",
 });
 
 /**
