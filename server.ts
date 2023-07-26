@@ -30,7 +30,7 @@ const httpServer = createServer(app);
 app.use(
 	cors({
 		origin: [
-			"http://localhost:5000",
+			"http://localhost:5100",
 			"https://communityfocus.app",
 			"https://admin.socket.io",
 		],
@@ -58,7 +58,11 @@ const io = new Server<
 	SocketData
 >(httpServer, {
 	cors: {
-		origin: "*",
+		origin: [
+			"http://localhost:5100",
+			"https://communityfocus.app",
+			"https://admin.socket.io",
+		],
 	},
 });
 
