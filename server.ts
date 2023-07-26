@@ -29,12 +29,9 @@ const httpServer = createServer(app);
 // middleware
 app.use(
 	cors({
-		origin: [
-			"http://localhost:5100",
-			"https://communityfocus.app",
-			"https://admin.socket.io",
-		],
+		origin: ["https://admin.socket.io"],
 		methods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
 	})
 );
 
@@ -59,15 +56,20 @@ const io = new Server<
 >(httpServer, {
 	cors: {
 		origin: [
-			"http://localhost:5100",
-			"https://communityfocus.app",
 			"https://admin.socket.io",
+			"https://communityfocus.app",
+			"http://localhost:5100",
 		],
+		credentials: true,
 	},
 });
 
 instrument(io, {
-	auth: false,
+	auth: {
+		type: "basic",
+		username: "admin",
+		password: `${process.env.SOCKET_ADMIN_PASS}`,
+	},
 });
 
 /**
