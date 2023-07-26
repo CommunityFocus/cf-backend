@@ -3,12 +3,16 @@ import { Server } from "socket.io";
 export interface EmitWithRoomNameArgs {
 	roomName: string;
 }
+
+export interface EmitJoinEventArgs extends EmitWithRoomNameArgs {
+	userName: string;
+}
 export interface EmitWorkBreakTimerArgs extends EmitWithRoomNameArgs {
 	userName: string;
 }
 
 export interface EmitWorkBreakResponseArgs {
-	userName: string;
+	userNameFromServer: string;
 	isBreakMode: boolean;
 }
 
@@ -39,12 +43,13 @@ export interface ServerToClientEvents {
 // socket.on
 export interface ClientToServerEvents {
 	startCountdown: (data: EmitStartCountdownArgs) => void;
-	join: (roomName: string) => void;
+	join: (data: EmitJoinEventArgs) => void;
 	timerRequest: (data: EmitWithRoomNameArgs) => void;
 	pauseCountdown: (data: EmitWithRoomNameArgs) => void;
 	resetCountdown: (data: EmitWithRoomNameArgs) => void;
 	breakTimer: (data: EmitWorkBreakTimerArgs) => void;
 	workTimer: (data: EmitWorkBreakTimerArgs) => void;
+	changeUsername: (data: { userName: string }) => void;
 }
 
 // io.on
@@ -55,7 +60,9 @@ export interface InterServerEvents {
 
 // socket.data type
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface SocketData {}
+export interface SocketData {
+	nickname: string;
+}
 
 export type ServerType = Server<
 	ClientToServerEvents,

@@ -16,6 +16,7 @@ import {
 	EmitStartCountdownArgs,
 	EmitWithRoomNameArgs,
 	EmitWorkBreakTimerArgs,
+	EmitJoinEventArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
 import { readFromDb, writeToDb } from "./common/models/dbHelpers";
@@ -62,7 +63,7 @@ const io = new Server<
  * {
  * [roomName]:{
  *    timer: setInterval(),
- *    users:[socket.id, socket.id, socket.id]]
+ *    users:[socket.data.nickname, socket.data.nickname, socket.data.nickname]]
  *    secondsRemaining: number,
  *    isPaused: boolean,
  * 	  isBreak: boolean,
@@ -111,9 +112,12 @@ io.on("connection", (socket) => {
 	}
 
 	// eslint-disable-next-line no-shadow
-	socket.on("join", async (roomName: string) => {
+	socket.on("join", async ({ roomName, userName }: EmitJoinEventArgs) => {
 		// join the room
 		socket.join(roomName);
+		// eslint-disable-next-line no-param-reassign
+		socket.data.nickname =
+			userName === "defaultUser" ? socket.id : userName;
 
 		if (timerStore[roomName] && roomName !== "default") {
 			if (!timerStore[roomName].timer) {
@@ -162,7 +166,7 @@ io.on("connection", (socket) => {
 			}
 
 			// add the user to the room
-			timerStore[roomName].users.push(socket.id);
+			timerStore[roomName].users.push(socket.data.nickname);
 
 			// emit the updated number of users in the room
 			io.to(roomName).emit("usersInRoom", {
@@ -170,21 +174,46 @@ io.on("connection", (socket) => {
 				userList: timerStore[roomName].users,
 			});
 
-			console.log(`User ${socket.id} joined room ${roomName}`);
+			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
 		}
 	});
 
 	console.log(
-		`User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
+		`User connected ${socket.data.nickname} ${
+			roomName ? `to room ${roomName}` : ""
+		}`
 	);
+
+	socket.on("changeUsername", ({ userName }: { userName: string }) => {
+		console.log("changeUsername", userName);
+		if (timerStore[roomName]) {
+			const oldUserName = socket.data.nickname;
+			console.log(
+				`User ${oldUserName} changed username to ${userName} in room ${roomName}`
+			);
+			timerStore[roomName].users.splice(
+				timerStore[roomName].users.indexOf(oldUserName),
+				1,
+				userName
+			);
+			io.to(roomName).emit("usersInRoom", {
+				numUsers: timerStore[roomName].users.length,
+				userList: timerStore[roomName].users,
+			});
+		}
+	});
 
 	socket.on("disconnect", () => {
 		if (timerStore[roomName] && roomName !== "default") {
-			// remove the user from the room
-			timerStore[roomName].users = timerStore[roomName].users.filter(
-				(user) => user !== socket.id
+			// remove the user from the room. Remove only the first instance of the user
+			timerStore[roomName].users.splice(
+				timerStore[roomName].users.indexOf(socket.data.nickname),
+				1
 			);
-			console.log(`User ${socket.id} disconnected from room ${roomName}`);
+
+			console.log(
+				`User ${socket.data.nickname} disconnected from room ${roomName}`
+			);
 
 			// emit the updated number of users in the room
 			io.to(roomName).emit("usersInRoom", {
@@ -300,7 +329,7 @@ io.on("connection", (socket) => {
 			timerStore[roomName].isBreak = true;
 			timerStore[roomName].isPaused = false;
 			io.to(roomName).emit("workBreakResponse", {
-				userName,
+				userNameFromServer: userName,
 				isBreakMode: timerStore[roomName].isBreak,
 			});
 			startCountdown({
@@ -318,7 +347,7 @@ io.on("connection", (socket) => {
 		timerStore[roomName].isBreak = false;
 		timerStore[roomName].isPaused = false;
 		io.to(roomName).emit("workBreakResponse", {
-			userName,
+			userNameFromServer: userName,
 			isBreakMode: timerStore[roomName].isBreak,
 		});
 		startCountdown({
