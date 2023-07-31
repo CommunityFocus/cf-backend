@@ -1,3 +1,5 @@
+import messageList from "../common/models/MessageList";
+import { writeMessageToDb } from "../common/models/dbHelpers";
 import { ServerType } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
 
@@ -6,6 +8,7 @@ interface StartCountdownArgs {
 	durationInSeconds: number;
 	io: ServerType;
 	timerStore: TimerStore;
+	userName: string;
 }
 
 const startCountdown = async ({
@@ -13,6 +16,7 @@ const startCountdown = async ({
 	durationInSeconds,
 	io,
 	timerStore,
+	userName,
 }: StartCountdownArgs): Promise<void> => {
 	if (!roomName || !timerStore || !timerStore[roomName]) {
 		console.error(`Room ${roomName} does not exist. Failed to start timer`);
@@ -47,7 +51,7 @@ const startCountdown = async ({
 		durationInSeconds);
 
 	// eslint-disable-next-line no-param-reassign
-	timerStore[roomName].timer = setInterval(() => {
+	timerStore[roomName].timer = setInterval(async () => {
 		if (!timerStore[roomName].isPaused) {
 			if (timerStore[roomName].secondsRemaining <= 0) {
 				// eslint-disable-next-line no-param-reassign
@@ -71,6 +75,16 @@ const startCountdown = async ({
 					isPaused: timerStore[roomName].isPaused,
 					isTimerRunning: timerStore[roomName].isTimerRunning,
 					isBreakMode: timerStore[roomName].isBreak,
+				});
+
+				await writeMessageToDb({
+					roomName,
+					message: messageList({
+						user: userName || "Anonymous",
+						room: roomName,
+						message: "left",
+					}),
+					userName: userName || "Anonymous",
 				});
 			} else {
 				// eslint-disable-next-line no-param-reassign

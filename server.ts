@@ -20,7 +20,12 @@ import {
 	EmitJoinEventArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
-import { readFromDb, writeToDb } from "./common/models/dbHelpers";
+import {
+	readFromDb,
+	writeMessageToDb,
+	writeToDb,
+} from "./common/models/dbHelpers";
+import messageList from "./common/models/MessageList";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -112,7 +117,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/v1/", storeMiddleware(timerStore), apiRoutes);
 
 // listen for socket.io connections and handle the countdown events
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
 	// get the room name from the query string. Example of roomName: "/:room"
 	const roomName = socket.handshake.query.roomName as string;
 
@@ -150,6 +155,7 @@ io.on("connection", (socket) => {
 		if (timerStore[roomName] && roomName !== "default") {
 			if (!timerStore[roomName].timer) {
 				const timerData = await readFromDb({ roomName });
+
 				if (timerData) {
 					// timeRemaining a continued countdown from endTimestamp to now
 					const timeRemaining = Math.floor(
@@ -178,6 +184,7 @@ io.on("connection", (socket) => {
 							timerStore[roomName].secondsRemaining,
 						io,
 						timerStore,
+						userName: socket.data.nickname,
 					});
 				} else {
 					await writeToDb({
@@ -190,11 +197,31 @@ io.on("connection", (socket) => {
 						),
 						originalDuration: timerStore[roomName].originalDuration,
 					});
+
+					await writeMessageToDb({
+						roomName,
+						message: messageList({
+							user: "User",
+							room: roomName,
+							message: "created",
+						}),
+						userName: "User",
+					});
 				}
 			}
 
 			// add the user to the room
 			timerStore[roomName].users.push(socket.data.nickname);
+
+			await writeMessageToDb({
+				roomName,
+				message: messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "joined",
+				}),
+				userName: socket.data.nickname,
+			});
 
 			// emit the updated number of users in the room
 			io.to(roomName).emit("usersInRoom", {
@@ -212,7 +239,7 @@ io.on("connection", (socket) => {
 		}`
 	);
 
-	socket.on("changeUsername", ({ userName }: { userName: string }) => {
+	socket.on("changeUsername", async ({ userName }: { userName: string }) => {
 		if (timerStore[roomName]) {
 			const oldUserName = socket.data.nickname;
 			console.log(
@@ -223,6 +250,21 @@ io.on("connection", (socket) => {
 				1,
 				userName
 			);
+
+			// eslint-disable-next-line no-param-reassign
+			socket.data.nickname = userName;
+
+			await writeMessageToDb({
+				roomName,
+				message: messageList({
+					user: oldUserName,
+					room: roomName,
+					message: "changedUsername",
+					value: userName,
+				}),
+				userName,
+			});
+
 			io.to(roomName).emit("usersInRoom", {
 				numUsers: timerStore[roomName].users.length,
 				userList: timerStore[roomName].users,
@@ -230,7 +272,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	socket.on("disconnect", () => {
+	socket.on("disconnect", async () => {
 		if (timerStore[roomName] && roomName !== "default") {
 			// remove the user from the room. Remove only the first instance of the user
 			timerStore[roomName].users.splice(
@@ -241,6 +283,16 @@ io.on("connection", (socket) => {
 			console.log(
 				`User ${socket.data.nickname} disconnected from room ${roomName}`
 			);
+
+			await writeMessageToDb({
+				roomName,
+				message: messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "left",
+				}),
+				userName: socket.data.nickname,
+			});
 
 			// emit the updated number of users in the room
 			io.to(roomName).emit("usersInRoom", {
@@ -287,7 +339,24 @@ io.on("connection", (socket) => {
 					),
 					originalDuration: timerStore[roomName].originalDuration,
 				});
-				startCountdown({ roomName, durationInSeconds, io, timerStore });
+				startCountdown({
+					roomName,
+					durationInSeconds,
+					io,
+					timerStore,
+					userName: socket.data.nickname,
+				});
+
+				await writeMessageToDb({
+					roomName,
+					message: messageList({
+						user: socket.data.nickname,
+						room: roomName,
+						message: "started",
+						value: `${durationInSeconds / 60}`,
+					}),
+					userName: socket.data.nickname,
+				});
 			}
 		}
 	);
@@ -321,8 +390,19 @@ io.on("connection", (socket) => {
 			durationInSeconds: timerStore[roomName].secondsRemaining,
 			io,
 			timerStore,
+			userName: socket.data.nickname,
 		});
 		timerRequest({ roomName, timerStore, socket });
+
+		await writeMessageToDb({
+			roomName,
+			message: messageList({
+				user: socket.data.nickname,
+				room: roomName,
+				message: timerStore[roomName].isPaused ? "paused" : "resumed",
+			}),
+			userName: socket.data.nickname,
+		});
 	});
 
 	// eslint-disable-next-line no-shadow
@@ -342,8 +422,20 @@ io.on("connection", (socket) => {
 				durationInSeconds: timerStore[roomName].originalDuration,
 				io,
 				timerStore,
+				userName: socket.data.nickname,
 			});
 			timerRequest({ roomName, timerStore, socket });
+
+			await writeMessageToDb({
+				roomName,
+				message: messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "reset",
+					value: `${timerStore[roomName].originalDuration / 60}`,
+				}),
+				userName: socket.data.nickname,
+			});
 		}
 	});
 
@@ -352,7 +444,7 @@ io.on("connection", (socket) => {
 	socket.on(
 		"breakTimer",
 		// eslint-disable-next-line no-shadow
-		({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+		async ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
 			timerStore[roomName].isBreak = true;
 			timerStore[roomName].isPaused = false;
 			io.to(roomName).emit("workBreakResponse", {
@@ -364,26 +456,51 @@ io.on("connection", (socket) => {
 				durationInSeconds: 0,
 				io,
 				timerStore,
+				userName: socket.data.nickname,
+			});
+
+			await writeMessageToDb({
+				roomName,
+				message: messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "break",
+				}),
+				userName: socket.data.nickname,
 			});
 		}
 	);
 
 	// handler workTimer : on emit of "workTimer" from the cf-frontend
-	// eslint-disable-next-line no-shadow
-	socket.on("workTimer", ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
-		timerStore[roomName].isBreak = false;
-		timerStore[roomName].isPaused = false;
-		io.to(roomName).emit("workBreakResponse", {
-			userNameFromServer: userName,
-			isBreakMode: timerStore[roomName].isBreak,
-		});
-		startCountdown({
-			roomName,
-			durationInSeconds: 0,
-			io,
-			timerStore,
-		});
-	});
+	socket.on(
+		"workTimer",
+		// eslint-disable-next-line no-shadow
+		async ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+			timerStore[roomName].isBreak = false;
+			timerStore[roomName].isPaused = false;
+			io.to(roomName).emit("workBreakResponse", {
+				userNameFromServer: userName,
+				isBreakMode: timerStore[roomName].isBreak,
+			});
+			startCountdown({
+				roomName,
+				durationInSeconds: 0,
+				io,
+				timerStore,
+				userName: socket.data.nickname,
+			});
+
+			await writeMessageToDb({
+				roomName,
+				message: messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "work",
+				}),
+				userName: socket.data.nickname,
+			});
+		}
+	);
 });
 
 export { io, httpServer, timerStore };

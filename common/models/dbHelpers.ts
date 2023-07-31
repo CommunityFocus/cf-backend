@@ -10,6 +10,11 @@ export interface TimerModel {
 	createdAt: Date;
 	updatedAt: Date;
 	originalDuration: number;
+	messageHistory: {
+		userName: string;
+		message: string;
+		date?: Date;
+	}[];
 }
 
 export const readFromDb = async ({
@@ -56,4 +61,51 @@ export const writeToDb = async ({
 	return Timer.findOneAndUpdate(query, update, {
 		upsert: true,
 	});
+};
+
+export const writeMessageToDb = async ({
+	roomName,
+	userName,
+	message,
+}: {
+	roomName: string;
+	userName: string;
+	message: string;
+}): Promise<
+	mongoose.Query<
+		TimerModel | null,
+		TimerModel,
+		Record<string, unknown>,
+		TimerModel
+	>
+> => {
+	const query = { roomName };
+	const update = {
+		$push: {
+			messageHistory: {
+				userName,
+				message,
+			},
+		},
+	};
+
+	return Timer.findOneAndUpdate(query, update, {
+		upsert: false,
+	});
+};
+
+export const readMessageFromDb = async ({
+	roomName,
+}: {
+	roomName: string;
+}): Promise<Partial<TimerModel> | undefined> => {
+	const timer = await readFromDb({ roomName });
+
+	if (!timer) {
+		return undefined;
+	}
+
+	return {
+		messageHistory: timer.messageHistory,
+	};
 };
