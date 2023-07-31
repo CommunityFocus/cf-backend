@@ -22,8 +22,8 @@ const messageList = ({
 			return `${user} left the room ${room}`;
 		case "started":
 			return `${user} started a ${
-				value ? `${value} min` : null
-			} timer in ${room}`;
+				value ? `${value} min ` : ""
+			}timer in ${room}`;
 
 		case "paused":
 			return `${user} paused the timer in ${room}`;
@@ -33,8 +33,8 @@ const messageList = ({
 
 		case "reset":
 			return `${user} reset the timer ${
-				value ? `to ${value} min` : null
-			}  in ${room}`;
+				value ? `to ${value} min ` : ""
+			}in ${room}`;
 
 		case "ended":
 			return `The timer in ${room} has ended!`;

@@ -72,12 +72,7 @@ export const writeMessageToDb = async ({
 	userName: string;
 	message: string;
 }): Promise<
-	mongoose.Query<
-		TimerModel | null,
-		TimerModel,
-		Record<string, unknown>,
-		TimerModel
-	>
+	mongoose.Query<TimerModel, TimerModel, Record<string, unknown>, TimerModel>
 > => {
 	const query = { roomName };
 	const update = {
@@ -91,14 +86,20 @@ export const writeMessageToDb = async ({
 
 	return Timer.findOneAndUpdate(query, update, {
 		upsert: false,
-	});
+		new: true,
+	}) as mongoose.Query<
+		TimerModel,
+		TimerModel,
+		Record<string, unknown>,
+		TimerModel
+	>;
 };
 
 export const readMessageFromDb = async ({
 	roomName,
 }: {
 	roomName: string;
-}): Promise<Partial<TimerModel> | undefined> => {
+}): Promise<{ messageHistory: TimerModel["messageHistory"] } | undefined> => {
 	const timer = await readFromDb({ roomName });
 
 	if (!timer) {

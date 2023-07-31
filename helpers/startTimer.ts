@@ -77,15 +77,24 @@ const startCountdown = async ({
 					isBreakMode: timerStore[roomName].isBreak,
 				});
 
-				await writeMessageToDb({
-					roomName,
-					message: messageList({
+				if (durationInSeconds > 1) {
+					const currentMessage = messageList({
 						user: userName || "Anonymous",
 						room: roomName,
-						message: "left",
-					}),
-					userName: userName || "Anonymous",
-				});
+						message: "started",
+					});
+
+					await writeMessageToDb({
+						roomName,
+						message: currentMessage,
+						userName: userName || "Anonymous",
+					});
+
+					io.to(roomName).emit("messageLog", {
+						messageLog: currentMessage,
+						date: new Date(),
+					});
+				}
 			} else {
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].isTimerRunning = true;
