@@ -25,8 +25,6 @@ export const readFromDb = async ({
 }): Promise<TimerModel | undefined> => {
 	const timer = await Timer.findOne({ roomName });
 
-	console.log("readFromDb", { roomName });
-
 	if (!timer) {
 		return undefined;
 	}
@@ -89,8 +87,6 @@ export const writeToDb = async ({
 			originalDuration,
 		},
 	};
-
-	console.log("writeToDb", { query, update });
 
 	return Timer.findOneAndUpdate(query, update, {
 		upsert: true,

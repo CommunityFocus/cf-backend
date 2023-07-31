@@ -8,5 +8,6 @@ export interface TimerStore {
 		destroyTimer?: NodeJS.Timeout;
 		originalDuration: number;
 		heartbeatCounter: number;
+		isTimerRunning: boolean;
 	};
 }

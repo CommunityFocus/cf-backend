@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import cors from "cors";
+import { instrument } from "@socket.io/admin-ui";
 import startCountdown from "./helpers/startTimer";
 import { timerRequest } from "./helpers/timerRequest";
 import { destroyTimer } from "./helpers/destroyTimer";
@@ -16,6 +17,7 @@ import {
 	EmitStartCountdownArgs,
 	EmitWithRoomNameArgs,
 	EmitWorkBreakTimerArgs,
+	EmitJoinEventArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
 import {
@@ -31,8 +33,17 @@ const httpServer = createServer(app);
 // middleware
 app.use(
 	cors({
-		origin: "*",
+		origin: [
+			"https://admin.socket.io",
+			"https://communityfocus.app",
+			"http://localhost:5100",
+			/* use regex to match all Netlify deploy preview URLs.
+			 * Example: https://deploy-preview-25--communityfocus.netlify.app/
+			 */
+			/https:\/\/deploy-preview-[0-9]+--communityfocus.netlify.app/,
+		],
 		methods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
 	})
 );
 
@@ -56,8 +67,26 @@ const io = new Server<
 	SocketData
 >(httpServer, {
 	cors: {
-		origin: "*",
+		origin: [
+			"https://admin.socket.io",
+			"https://communityfocus.app",
+			"http://localhost:5100",
+			/* use regex to match all Netlify deploy preview URLs.
+			 * Example: https://deploy-preview-25--communityfocus.netlify.app/
+			 */
+			/https:\/\/deploy-preview-[0-9]+--communityfocus.netlify.app/,
+		],
+		credentials: true,
 	},
+});
+
+instrument(io, {
+	auth: {
+		type: "basic",
+		username: "admin",
+		password: `${process.env.SOCKET_ADMIN_PASS}`,
+	},
+	mode: "development",
 });
 
 /**
@@ -66,7 +95,7 @@ const io = new Server<
  * {
  * [roomName]:{
  *    timer: setInterval(),
- *    users:[socket.id, socket.id, socket.id]]
+ *    users:[socket.data.nickname, socket.data.nickname, socket.data.nickname]]
  *    secondsRemaining: number,
  *    isPaused: boolean,
  * 	  isBreak: boolean,
@@ -103,6 +132,7 @@ io.on("connection", (socket) => {
 			isBreak: false,
 			originalDuration: 0,
 			heartbeatCounter: 0,
+			isTimerRunning: false,
 		};
 	}
 	// console.log("timerStore", timerStore);
@@ -114,9 +144,12 @@ io.on("connection", (socket) => {
 	}
 
 	// eslint-disable-next-line no-shadow
-	socket.on("join", async (roomName: string) => {
+	socket.on("join", async ({ roomName, userName }: EmitJoinEventArgs) => {
 		// join the room
 		socket.join(roomName);
+		// eslint-disable-next-line no-param-reassign
+		socket.data.nickname =
+			userName === "defaultUser" ? socket.id : userName;
 
 		if (timerStore[roomName] && roomName !== "default") {
 			const timerData = await readFromDb({ roomName });
@@ -172,7 +205,7 @@ io.on("connection", (socket) => {
 			}
 
 			// add the user to the room
-			timerStore[roomName].users.push(socket.id);
+			timerStore[roomName].users.push(socket.data.nickname);
 
 			// emit the updated number of users in the room
 			io.to(roomName).emit("usersInRoom", {
@@ -180,26 +213,57 @@ io.on("connection", (socket) => {
 				userList: timerStore[roomName].users,
 			});
 
+
 			// send only 100 most recent updateLog messages
 			io.to(roomName).emit("updateLogHistory", {
 				updateLog: timerData?.updateLog.slice(-25) || [],
 			});
 
-			console.log(`User ${socket.id} joined room ${roomName}`);
+
+			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
+
 		}
 	});
 
 	console.log(
-		`User connected ${socket.id} ${roomName ? `to room ${roomName}` : ""}`
+		`User connected ${socket.data.nickname} ${
+			roomName ? `to room ${roomName}` : ""
+		}`
 	);
-
-	socket.on("disconnect", async () => {
-		if (timerStore[roomName] && roomName !== "default") {
-			// remove the user from the room
-			timerStore[roomName].users = timerStore[roomName].users.filter(
-				(user) => user !== socket.id
+  
+  	socket.on("changeUsername", ({ userName }: { userName: string }) => {
+		if (timerStore[roomName]) {
+			const oldUserName = socket.data.nickname;
+			console.log(
+				`User ${oldUserName} changed username to ${userName} in room ${roomName}`
 			);
-			console.log(`User ${socket.id} disconnected from room ${roomName}`);
+			timerStore[roomName].users.splice(
+				timerStore[roomName].users.indexOf(oldUserName),
+				1,
+				userName
+			);
+			io.to(roomName).emit("usersInRoom", {
+				numUsers: timerStore[roomName].users.length,
+				userList: timerStore[roomName].users,
+			});
+		}
+	});
+
+
+
+
+	socket.on("disconnect", () => {
+
+		if (timerStore[roomName] && roomName !== "default") {
+			// remove the user from the room. Remove only the first instance of the user
+			timerStore[roomName].users.splice(
+				timerStore[roomName].users.indexOf(socket.data.nickname),
+				1
+			);
+
+			console.log(
+				`User ${socket.data.nickname} disconnected from room ${roomName}`
+			);
 
 			// emit the updated number of users in the room
 			io.to(roomName).emit("usersInRoom", {
@@ -342,25 +406,42 @@ io.on("connection", (socket) => {
 	});
 
 	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
-	socket.on("breakTimer", async (breakTimer: EmitWorkBreakTimerArgs) => {
-		console.log("Console log from the 'breakTimer' emit event", {
-			Username: `Client's user name is ${breakTimer.userName}`,
-			roomName: `Client's roomName is ${breakTimer.roomName}`,
-		});
 
-		await modifyUpdateLog({
-			roomName,
-			message: `switched the timer to break mode`,
-			user: socket.id,
-			io,
-		});
-	});
+
+	socket.on(
+		"breakTimer",
+		// eslint-disable-next-line no-shadow
+		({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+			timerStore[roomName].isBreak = true;
+			timerStore[roomName].isPaused = false;
+			io.to(roomName).emit("workBreakResponse", {
+				userNameFromServer: userName,
+				isBreakMode: timerStore[roomName].isBreak,
+			});
+			startCountdown({
+				roomName,
+				durationInSeconds: 0,
+				io,
+				timerStore,
+			});
+		}
+	);
 
 	// handler workTimer : on emit of "workTimer" from the cf-frontend
-	socket.on("workTimer", async (workTimer: EmitWorkBreakTimerArgs) => {
-		console.log("Console log from the 'workTimer' emit event", {
-			Username: `Client's user name is ${workTimer.userName}`,
-			roomName: `Client's roomName is ${workTimer.roomName}`,
+	// eslint-disable-next-line no-shadow
+	socket.on("workTimer", ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+		timerStore[roomName].isBreak = false;
+		timerStore[roomName].isPaused = false;
+		io.to(roomName).emit("workBreakResponse", {
+			userNameFromServer: userName,
+			isBreakMode: timerStore[roomName].isBreak,
+		});
+		startCountdown({
+			roomName,
+			durationInSeconds: 0,
+			io,
+			timerStore,
+
 		});
 
 		await modifyUpdateLog({

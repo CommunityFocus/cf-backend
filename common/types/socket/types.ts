@@ -1,22 +1,30 @@
 import { Server } from "socket.io";
 
-export interface EmitWorkBreakTimerArgs {
-	userName: string;
-	roomName: string;
-}
-
-export interface EmitStartCountdownArgs {
-	roomName: string;
-	durationInSeconds: number;
-}
-
 export interface EmitWithRoomNameArgs {
 	roomName: string;
+}
+
+export interface EmitJoinEventArgs extends EmitWithRoomNameArgs {
+	userName: string;
+}
+export interface EmitWorkBreakTimerArgs extends EmitWithRoomNameArgs {
+	userName: string;
+}
+
+export interface EmitWorkBreakResponseArgs {
+	userNameFromServer: string;
+	isBreakMode: boolean;
+}
+
+export interface EmitStartCountdownArgs extends EmitWithRoomNameArgs {
+	durationInSeconds: number;
 }
 
 export interface EmitTimerResponseArgs {
 	secondsRemaining: number;
 	isPaused: boolean;
+	isTimerRunning: boolean;
+	isBreakMode: boolean;
 }
 
 export interface EmitUsersInRoomArgs {
@@ -37,19 +45,23 @@ export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
+
 	updateLogHistory: (data: { updateLog: UpdateLogArray }) => void;
 	updateLog: (data: UpdateLog) => void;
+	workBreakResponse: (data: EmitWorkBreakResponseArgs) => void;
+
 }
 
 // socket.on
 export interface ClientToServerEvents {
 	startCountdown: (data: EmitStartCountdownArgs) => void;
-	join: (roomName: string) => void;
+	join: (data: EmitJoinEventArgs) => void;
 	timerRequest: (data: EmitWithRoomNameArgs) => void;
 	pauseCountdown: (data: EmitWithRoomNameArgs) => void;
 	resetCountdown: (data: EmitWithRoomNameArgs) => void;
 	breakTimer: (data: EmitWorkBreakTimerArgs) => void;
 	workTimer: (data: EmitWorkBreakTimerArgs) => void;
+	changeUsername: (data: { userName: string }) => void;
 }
 
 // io.on
@@ -60,7 +72,9 @@ export interface InterServerEvents {
 
 // socket.data type
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface SocketData {}
+export interface SocketData {
+	nickname: string;
+}
 
 export type ServerType = Server<
 	ClientToServerEvents,
