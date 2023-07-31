@@ -27,6 +27,7 @@ import {
 	writeToDb,
 } from "./common/models/dbHelpers";
 import messageList from "./common/models/MessageList";
+import formatTimestamp from "./helpers/formatTimestamp";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -185,7 +186,6 @@ io.on("connection", async (socket) => {
 							timerStore[roomName].secondsRemaining,
 						io,
 						timerStore,
-						userName: socket.data.nickname,
 					});
 				} else {
 					await writeToDb({
@@ -238,16 +238,20 @@ io.on("connection", async (socket) => {
 				date: new Date(),
 			});
 
+			// limit to last 50 messages
 			const messageHistory = await readMessageFromDb({ roomName });
+
+			const limitedMessageHistory = messageHistory
+				? messageHistory.messageHistory.slice(-50)
+				: [];
 
 			socket.emit("messageLogArray", {
 				// only keep username, message, and date properties
-				messageHistory:
-					messageHistory?.messageHistory.map((message) => ({
-						userName: message.userName,
-						message: message.message,
-						date: message.date,
-					})) || [],
+				messageHistory: limitedMessageHistory.map((message) => ({
+					userName: message.userName,
+					message: message.message,
+					date: message.date,
+				})),
 			});
 
 			// emit the updated number of users in the room
@@ -378,19 +382,15 @@ io.on("connection", async (socket) => {
 					),
 					originalDuration: timerStore[roomName].originalDuration,
 				});
-				startCountdown({
-					roomName,
-					durationInSeconds,
-					io,
-					timerStore,
-					userName: socket.data.nickname,
-				});
 
 				const currentMessage = messageList({
 					user: socket.data.nickname,
 					room: roomName,
 					message: "started",
 					value: `${durationInSeconds / 60}`,
+					altValue: formatTimestamp(
+						timerStore[roomName].secondsRemaining
+					),
 				});
 
 				await writeMessageToDb({
@@ -402,6 +402,13 @@ io.on("connection", async (socket) => {
 				io.to(roomName).emit("messageLog", {
 					messageLog: currentMessage,
 					date: new Date(),
+				});
+
+				startCountdown({
+					roomName,
+					durationInSeconds,
+					io,
+					timerStore,
 				});
 			}
 		}
@@ -431,19 +438,12 @@ io.on("connection", async (socket) => {
 				Date.now() + timerStore[roomName].secondsRemaining * 1000
 			),
 		});
-		startCountdown({
-			roomName,
-			durationInSeconds: timerStore[roomName].secondsRemaining,
-			io,
-			timerStore,
-			userName: socket.data.nickname,
-		});
-		timerRequest({ roomName, timerStore, socket });
 
 		const currentMessage = messageList({
 			user: socket.data.nickname,
 			room: roomName,
 			message: timerStore[roomName].isPaused ? "paused" : "resumed",
+			altValue: formatTimestamp(timerStore[roomName].secondsRemaining),
 		});
 
 		await writeMessageToDb({
@@ -456,6 +456,14 @@ io.on("connection", async (socket) => {
 			messageLog: currentMessage,
 			date: new Date(),
 		});
+
+		startCountdown({
+			roomName,
+			durationInSeconds: timerStore[roomName].secondsRemaining,
+			io,
+			timerStore,
+		});
+		timerRequest({ roomName, timerStore, socket });
 	});
 
 	// eslint-disable-next-line no-shadow
@@ -470,20 +478,15 @@ io.on("connection", async (socket) => {
 					Date.now() + timerStore[roomName].originalDuration * 1000
 				),
 			});
-			startCountdown({
-				roomName,
-				durationInSeconds: timerStore[roomName].originalDuration,
-				io,
-				timerStore,
-				userName: socket.data.nickname,
-			});
-			timerRequest({ roomName, timerStore, socket });
 
 			const currentMessage = messageList({
 				user: socket.data.nickname,
 				room: roomName,
 				message: "reset",
 				value: `${timerStore[roomName].originalDuration / 60}`,
+				altValue: formatTimestamp(
+					timerStore[roomName].secondsRemaining
+				),
 			});
 			await writeMessageToDb({
 				roomName,
@@ -495,6 +498,14 @@ io.on("connection", async (socket) => {
 				messageLog: currentMessage,
 				date: new Date(),
 			});
+
+			startCountdown({
+				roomName,
+				durationInSeconds: timerStore[roomName].originalDuration,
+				io,
+				timerStore,
+			});
+			timerRequest({ roomName, timerStore, socket });
 		}
 	});
 
@@ -510,18 +521,14 @@ io.on("connection", async (socket) => {
 				userNameFromServer: userName,
 				isBreakMode: timerStore[roomName].isBreak,
 			});
-			startCountdown({
-				roomName,
-				durationInSeconds: 0,
-				io,
-				timerStore,
-				userName: socket.data.nickname,
-			});
 
 			const currentMessage = messageList({
 				user: socket.data.nickname,
 				room: roomName,
 				message: "break",
+				altValue: formatTimestamp(
+					timerStore[roomName].secondsRemaining
+				),
 			});
 
 			await writeMessageToDb({
@@ -534,6 +541,13 @@ io.on("connection", async (socket) => {
 			io.to(roomName).emit("messageLog", {
 				messageLog: currentMessage,
 				date: new Date(),
+			});
+
+			startCountdown({
+				roomName,
+				durationInSeconds: 0,
+				io,
+				timerStore,
 			});
 		}
 	);
@@ -549,18 +563,14 @@ io.on("connection", async (socket) => {
 				userNameFromServer: userName,
 				isBreakMode: timerStore[roomName].isBreak,
 			});
-			startCountdown({
-				roomName,
-				durationInSeconds: 0,
-				io,
-				timerStore,
-				userName: socket.data.nickname,
-			});
 
 			const currentMessage = messageList({
 				user: socket.data.nickname,
 				room: roomName,
 				message: "work",
+				altValue: formatTimestamp(
+					timerStore[roomName].secondsRemaining
+				),
 			});
 
 			await writeMessageToDb({
@@ -572,6 +582,13 @@ io.on("connection", async (socket) => {
 			io.to(roomName).emit("messageLog", {
 				messageLog: currentMessage,
 				date: new Date(),
+			});
+
+			startCountdown({
+				roomName,
+				durationInSeconds: 0,
+				io,
+				timerStore,
 			});
 		}
 	);

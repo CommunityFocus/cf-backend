@@ -3,47 +3,57 @@ const messageList = ({
 	message,
 	room,
 	value,
+	altValue,
 }: {
 	user: string;
 	message: string;
 	room: string;
 	value?: string;
+	altValue?: string;
 }): string => {
 	const lowerCaseMessage = message.toLowerCase();
 
 	switch (lowerCaseMessage) {
 		case "created":
-			return `${user} created the room ${room}`;
+			return `${user} created the room: ${room}`;
 		case "joined":
-			return `${user} joined the room ${room}`;
+			return `${user} joined the room`;
 		case "changedUsername":
 			return `${user} changed their username to ${value}`;
 		case "left":
-			return `${user} left the room ${room}`;
+			return `${user} left the room`;
 		case "started":
-			return `${user} started a ${
-				value ? `${value} min ` : ""
-			}timer in ${room}`;
+			return `${user} started a ${value ? `${value} min` : ""} timer ${
+				altValue !== "00:00" ? `at ${altValue} min` : ""
+			}`;
 
 		case "paused":
-			return `${user} paused the timer in ${room}`;
+			return `${user} paused the timer ${
+				altValue ? `at ${altValue} min` : ""
+			}`;
 
 		case "resumed":
-			return `${user} resumed the timer in ${room}`;
+			return `${user} resumed the timer ${
+				altValue ? `at ${altValue} min` : ""
+			}`;
 
 		case "reset":
-			return `${user} reset the timer ${
-				value ? `to ${value} min ` : ""
-			}in ${room}`;
+			return `${user} reset the timer ${value ? `to ${value} min` : ""} ${
+				altValue ? `at ${altValue} min` : ""
+			}`;
 
 		case "ended":
-			return `The timer in ${room} has ended!`;
+			return `The timer has ended!`;
 
 		case "break":
-			return `${user} switched to break in ${room}`;
+			return `${user} switched to break ${
+				altValue ? `at ${altValue} min` : ""
+			}`;
 
 		case "work":
-			return `${user} switched to work in ${room}`;
+			return `${user} switched to work ${
+				altValue ? `at ${altValue} min` : ""
+			}`;
 		default:
 			return `${user} triggered an event in ${room}`;
 	}

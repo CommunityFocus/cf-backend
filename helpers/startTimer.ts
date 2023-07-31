@@ -2,13 +2,13 @@ import messageList from "../common/models/MessageList";
 import { writeMessageToDb } from "../common/models/dbHelpers";
 import { ServerType } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
+import formatTimestamp from "./formatTimestamp";
 
 interface StartCountdownArgs {
 	roomName: string;
 	durationInSeconds: number;
 	io: ServerType;
 	timerStore: TimerStore;
-	userName: string;
 }
 
 const startCountdown = async ({
@@ -16,7 +16,6 @@ const startCountdown = async ({
 	durationInSeconds,
 	io,
 	timerStore,
-	userName,
 }: StartCountdownArgs): Promise<void> => {
 	if (!roomName || !timerStore || !timerStore[roomName]) {
 		console.error(`Room ${roomName} does not exist. Failed to start timer`);
@@ -79,15 +78,16 @@ const startCountdown = async ({
 
 				if (durationInSeconds > 1) {
 					const currentMessage = messageList({
-						user: userName || "Anonymous",
+						user: "Anonymous",
 						room: roomName,
-						message: "started",
+						message: "ended",
+						altValue: formatTimestamp(durationInSeconds),
 					});
 
 					await writeMessageToDb({
 						roomName,
 						message: currentMessage,
-						userName: userName || "Anonymous",
+						userName: "Anonymous",
 					});
 
 					io.to(roomName).emit("messageLog", {
