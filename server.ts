@@ -200,7 +200,7 @@ io.on("connection", async (socket) => {
 					});
 
 					const currentMessage = messageList({
-						user: "User",
+						user: userName,
 						room: roomName,
 						message: "created",
 					});
@@ -208,7 +208,7 @@ io.on("connection", async (socket) => {
 					await writeMessageToDb({
 						roomName,
 						message: currentMessage,
-						userName: "User",
+						userName,
 					});
 
 					socket.broadcast.to(roomName).emit("messageLog", {
