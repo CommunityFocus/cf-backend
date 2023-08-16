@@ -20,7 +20,11 @@ import {
 	EmitJoinEventArgs,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
-import { readFromDb, writeToDb } from "./common/models/dbHelpers";
+import {
+	modifyUpdateLog,
+	readFromDb,
+	writeToDb,
+} from "./common/models/dbHelpers";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -148,8 +152,8 @@ io.on("connection", (socket) => {
 			userName === "defaultUser" ? socket.id : userName;
 
 		if (timerStore[roomName] && roomName !== "default") {
+			const timerData = await readFromDb({ roomName });
 			if (!timerStore[roomName].timer) {
-				const timerData = await readFromDb({ roomName });
 				if (timerData) {
 					// timeRemaining a continued countdown from endTimestamp to now
 					const timeRemaining = Math.floor(
@@ -191,6 +195,13 @@ io.on("connection", (socket) => {
 						originalDuration: timerStore[roomName].originalDuration,
 					});
 				}
+
+				await modifyUpdateLog({
+					roomName,
+					message: `joined the room`,
+					user: socket.id,
+					io,
+				});
 			}
 
 			// add the user to the room
@@ -202,7 +213,15 @@ io.on("connection", (socket) => {
 				userList: timerStore[roomName].users,
 			});
 
+
+			// send only 100 most recent updateLog messages
+			io.to(roomName).emit("updateLogHistory", {
+				updateLog: timerData?.updateLog.slice(-25) || [],
+			});
+
+
 			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
+
 		}
 	});
 
@@ -211,8 +230,8 @@ io.on("connection", (socket) => {
 			roomName ? `to room ${roomName}` : ""
 		}`
 	);
-
-	socket.on("changeUsername", ({ userName }: { userName: string }) => {
+  
+  	socket.on("changeUsername", ({ userName }: { userName: string }) => {
 		if (timerStore[roomName]) {
 			const oldUserName = socket.data.nickname;
 			console.log(
@@ -230,7 +249,11 @@ io.on("connection", (socket) => {
 		}
 	});
 
+
+
+
 	socket.on("disconnect", () => {
+
 		if (timerStore[roomName] && roomName !== "default") {
 			// remove the user from the room. Remove only the first instance of the user
 			timerStore[roomName].users.splice(
@@ -265,6 +288,13 @@ io.on("connection", (socket) => {
 
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
 
+		await modifyUpdateLog({
+			roomName,
+			message: `left the room`,
+			user: socket.id,
+			io,
+		});
+
 		// leave the room
 		socket.leave(roomName);
 	});
@@ -288,6 +318,16 @@ io.on("connection", (socket) => {
 					originalDuration: timerStore[roomName].originalDuration,
 				});
 				startCountdown({ roomName, durationInSeconds, io, timerStore });
+
+				// round the duration to the nearest minute
+				await modifyUpdateLog({
+					roomName,
+					message: `started a countdown for ${
+						(Math.round(durationInSeconds / 60) * 60) / 60
+					} minutes`,
+					user: socket.id,
+					io,
+				});
 			}
 		}
 	);
@@ -323,6 +363,15 @@ io.on("connection", (socket) => {
 			timerStore,
 		});
 		timerRequest({ roomName, timerStore, socket });
+
+		await modifyUpdateLog({
+			roomName,
+			message: `${
+				timerStore[roomName].isPaused ? "paused" : "unpaused"
+			} the countdown`,
+			user: socket.id,
+			io,
+		});
 	});
 
 	// eslint-disable-next-line no-shadow
@@ -344,10 +393,20 @@ io.on("connection", (socket) => {
 				timerStore,
 			});
 			timerRequest({ roomName, timerStore, socket });
+
+			await modifyUpdateLog({
+				roomName,
+				message: `reset the countdown to ${
+					timerStore[roomName].originalDuration / 60
+				} minutes`,
+				user: socket.id,
+				io,
+			});
 		}
 	});
 
 	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
+
 
 	socket.on(
 		"breakTimer",
@@ -382,6 +441,14 @@ io.on("connection", (socket) => {
 			durationInSeconds: 0,
 			io,
 			timerStore,
+
+		});
+
+		await modifyUpdateLog({
+			roomName,
+			message: `switched the timer to work mode`,
+			user: socket.id,
+			io,
 		});
 	});
 });
