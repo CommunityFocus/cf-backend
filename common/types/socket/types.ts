@@ -38,6 +38,10 @@ export interface ServerToClientEvents {
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
 	workBreakResponse: (data: EmitWorkBreakResponseArgs) => void;
+	messageLog: (data: { messageLog: string; date: Date }) => void;
+	messageLogArray: (data: {
+		messageHistory: { userName: string; message: string; date?: Date }[];
+	}) => void;
 }
 
 // socket.on

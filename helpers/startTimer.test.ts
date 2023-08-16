@@ -1,6 +1,21 @@
 import startCountdown from "./startTimer";
 import { ioTestType, timerStoreTestType } from "../common/types/test/types";
 
+jest.mock("mongoose", () => {
+	return {
+		Schema: jest.fn().mockImplementation(),
+		model: jest.fn().mockImplementation(() => {
+			return {
+				findOneAndUpdate: jest.fn().mockImplementation(() => {
+					return {
+						exec: jest.fn().mockResolvedValue(null),
+					};
+				}),
+			};
+		}),
+	};
+});
+
 describe("startCountdown", () => {
 	describe("when startCountdown is called", () => {
 		let clearIntervalSpy: jest.SpyInstance;

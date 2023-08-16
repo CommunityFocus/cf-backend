@@ -1,5 +1,8 @@
+import messageList from "../common/models/MessageList";
+import { writeMessageToDb } from "../common/models/dbHelpers";
 import { ServerType } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
+import formatTimestamp from "./formatTimestamp";
 
 interface StartCountdownArgs {
 	roomName: string;
@@ -47,7 +50,7 @@ const startCountdown = async ({
 		durationInSeconds);
 
 	// eslint-disable-next-line no-param-reassign
-	timerStore[roomName].timer = setInterval(() => {
+	timerStore[roomName].timer = setInterval(async () => {
 		if (!timerStore[roomName].isPaused) {
 			if (timerStore[roomName].secondsRemaining <= 0) {
 				// eslint-disable-next-line no-param-reassign
@@ -72,6 +75,26 @@ const startCountdown = async ({
 					isTimerRunning: timerStore[roomName].isTimerRunning,
 					isBreakMode: timerStore[roomName].isBreak,
 				});
+
+				if (durationInSeconds > 1) {
+					const currentMessage = messageList({
+						user: "Anonymous",
+						room: roomName,
+						message: "ended",
+						altValue: formatTimestamp(durationInSeconds),
+					});
+
+					await writeMessageToDb({
+						roomName,
+						message: currentMessage,
+						userName: "Anonymous",
+					});
+
+					io.to(roomName).emit("messageLog", {
+						messageLog: currentMessage,
+						date: new Date(),
+					});
+				}
 			} else {
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].isTimerRunning = true;

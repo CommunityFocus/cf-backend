@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+const messageSchema = new mongoose.Schema({
+	userName: {
+		type: String,
+		required: true,
+	},
+	message: {
+		type: String,
+		required: true,
+	},
+	date: {
+		type: Date,
+		required: true,
+		default: Date.now,
+	},
+});
+
 const timerSchema = new mongoose.Schema({
 	roomName: {
 		type: String,
@@ -33,6 +49,10 @@ const timerSchema = new mongoose.Schema({
 	updatedAt: {
 		type: Date,
 		required: true,
+	},
+	messageHistory: {
+		type: [messageSchema],
+		required: false,
 	},
 });
 
