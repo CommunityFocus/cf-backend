@@ -213,12 +213,15 @@ io.on("connection", (socket) => {
 				userList: timerStore[roomName].users,
 			});
 
+
 			// send only 100 most recent updateLog messages
 			io.to(roomName).emit("updateLogHistory", {
 				updateLog: timerData?.updateLog.slice(-25) || [],
 			});
 
+
 			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
+
 		}
 	});
 
@@ -227,8 +230,8 @@ io.on("connection", (socket) => {
 			roomName ? `to room ${roomName}` : ""
 		}`
 	);
-
-	socket.on("changeUsername", ({ userName }: { userName: string }) => {
+  
+  	socket.on("changeUsername", ({ userName }: { userName: string }) => {
 		if (timerStore[roomName]) {
 			const oldUserName = socket.data.nickname;
 			console.log(
@@ -246,7 +249,11 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	socket.on("disconnect", async () => {
+
+
+
+	socket.on("disconnect", () => {
+
 		if (timerStore[roomName] && roomName !== "default") {
 			// remove the user from the room. Remove only the first instance of the user
 			timerStore[roomName].users.splice(
@@ -399,6 +406,8 @@ io.on("connection", (socket) => {
 	});
 
 	// handler breakTimer : on emit of "breakTimer" from the cf-frontend
+
+
 	socket.on(
 		"breakTimer",
 		// eslint-disable-next-line no-shadow
@@ -419,31 +428,29 @@ io.on("connection", (socket) => {
 	);
 
 	// handler workTimer : on emit of "workTimer" from the cf-frontend
-	socket.on(
-		"workTimer",
-		// eslint-disable-next-line no-shadow
-		async ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
-			timerStore[roomName].isBreak = false;
-			timerStore[roomName].isPaused = false;
-			io.to(roomName).emit("workBreakResponse", {
-				userNameFromServer: userName,
-				isBreakMode: timerStore[roomName].isBreak,
-			});
-			startCountdown({
-				roomName,
-				durationInSeconds: 0,
-				io,
-				timerStore,
-			});
+	// eslint-disable-next-line no-shadow
+	socket.on("workTimer", ({ roomName, userName }: EmitWorkBreakTimerArgs) => {
+		timerStore[roomName].isBreak = false;
+		timerStore[roomName].isPaused = false;
+		io.to(roomName).emit("workBreakResponse", {
+			userNameFromServer: userName,
+			isBreakMode: timerStore[roomName].isBreak,
+		});
+		startCountdown({
+			roomName,
+			durationInSeconds: 0,
+			io,
+			timerStore,
 
-			await modifyUpdateLog({
-				roomName,
-				message: `switched the timer to work mode`,
-				user: socket.id,
-				io,
-			});
-		}
-	);
+		});
+
+		await modifyUpdateLog({
+			roomName,
+			message: `switched the timer to work mode`,
+			user: socket.id,
+			io,
+		});
+	});
 });
 
 export { io, httpServer, timerStore };
