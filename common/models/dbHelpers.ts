@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import Timer from "./timer";
-import { ServerType } from "../types/socket/types";
 
 export interface TimerModel {
 	roomName: string;
@@ -11,11 +10,6 @@ export interface TimerModel {
 	createdAt: Date;
 	updatedAt: Date;
 	originalDuration: number;
-	updateLog: mongoose.Types.DocumentArray<{
-		message: string;
-		user: string;
-		time: Date;
-	}>;
 }
 
 export const readFromDb = async ({
@@ -30,35 +24,6 @@ export const readFromDb = async ({
 	}
 
 	return timer;
-};
-
-export const modifyUpdateLog = async ({
-	roomName,
-	message,
-	user,
-	io,
-}: {
-	roomName: string;
-	message: string;
-	user: string;
-	io: ServerType;
-}): Promise<mongoose.UpdateWriteOpResult> => {
-	io.to(roomName).emit("updateLog", {
-		message,
-		user,
-		time: new Date(),
-	});
-	const query = { roomName };
-	const update = {
-		$push: {
-			updateLog: {
-				message,
-				user,
-			},
-		},
-	};
-
-	return Timer.updateOne(query, update);
 };
 
 export const writeToDb = async ({

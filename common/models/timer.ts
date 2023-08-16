@@ -1,21 +1,5 @@
 import mongoose from "mongoose";
 
-const updateLogSchema = new mongoose.Schema({
-	message: {
-		type: String,
-		required: true,
-	},
-	user: {
-		type: String,
-		required: true,
-	},
-	time: {
-		type: Date,
-		required: true,
-		default: Date.now,
-	},
-});
-
 const timerSchema = new mongoose.Schema({
 	roomName: {
 		type: String,
@@ -50,7 +34,6 @@ const timerSchema = new mongoose.Schema({
 		type: Date,
 		required: true,
 	},
-	updateLog: [updateLogSchema],
 });
 
 const Timer = mongoose.model("Timer", timerSchema);
