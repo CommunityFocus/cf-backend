@@ -1,3 +1,5 @@
+import formatTimestamp from "../../helpers/formatTimestamp";
+
 const messageList = ({
 	user,
 	message,
@@ -23,9 +25,9 @@ const messageList = ({
 		case "left":
 			return `${user} left the room`;
 		case "started":
-			return `${user} started a ${value ? `${value} min` : ""} timer ${
-				altValue !== "00:00" ? `at ${altValue} min` : ""
-			}`;
+			return `${user} started a ${
+				value ? `${formatTimestamp(Number(value) * 60)}` : ""
+			} timer ${altValue !== "00:00" ? `at ${altValue} min` : ""}`;
 
 		case "paused":
 			return `${user} paused the timer ${
