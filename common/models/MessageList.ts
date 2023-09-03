@@ -56,6 +56,12 @@ const messageList = ({
 			return `${user} switched to work ${
 				altValue ? `at ${altValue} min` : ""
 			}`;
+
+		case "addedtimer":
+			return `${user} added a ${value ? `${value} min` : ""} timer`;
+
+		case "removedtimer":
+			return `${user} removed a ${value ? `${value} min` : ""} timer`;
 		default:
 			return `${user} triggered an event in ${room}`;
 	}

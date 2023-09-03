@@ -132,8 +132,8 @@ io.on("connection", async (socket) => {
 			users: [],
 			timer: undefined,
 			timerButtons: {
-				work: [5, 10, 15],
-				break: [40, 45, 50],
+				work: [5, 10, 15, 20, 25, 30],
+				break: [1, 2, 5, 10, 15, 30],
 			},
 			secondsRemaining: 0,
 			isPaused: false,
@@ -184,6 +184,11 @@ io.on("connection", async (socket) => {
 					timerStore[roomName].isPaused = timerData.isPaused || false;
 					timerStore[roomName].originalDuration =
 						timerData.originalDuration;
+
+					timerStore[roomName].timerButtons.work =
+						timerData.workTimerButtons;
+					timerStore[roomName].timerButtons.break =
+						timerData.breakTimerButtons;
 
 					startCountdown({
 						roomName,
@@ -611,6 +616,9 @@ io.on("connection", async (socket) => {
 		"updateTimerButtons",
 		// eslint-disable-next-line no-shadow
 		async ({ roomName, timerButtons, isBreak }) => {
+			const previousTimerButtons =
+				timerStore[roomName].timerButtons[isBreak ? "break" : "work"];
+
 			timerStore[roomName].timerButtons[isBreak ? "break" : "work"] =
 				timerButtons;
 
@@ -630,6 +638,46 @@ io.on("connection", async (socket) => {
 				workTimerButtons: timerStore[roomName].timerButtons.work,
 				breakTimerButtons: timerStore[roomName].timerButtons.break,
 			});
+
+			let currentMessage = "";
+			// if added a timer, then send a message to the room
+			if (previousTimerButtons.length < timerButtons.length) {
+				currentMessage = messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "addedTimer",
+					value: `${timerButtons[timerButtons.length - 1]}`,
+				});
+			}
+
+			// if removed a timer, then send a message to the room
+			if (previousTimerButtons.length > timerButtons.length) {
+				currentMessage = messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "removedTimer",
+					value: `${
+						previousTimerButtons.filter(
+							(timer) =>
+								!timerButtons.includes(timer) &&
+								timer !== undefined
+						)[0]
+					}`,
+				});
+			}
+
+			if (currentMessage.length > 0) {
+				await writeMessageToDb({
+					roomName,
+					message: currentMessage,
+					userName: socket.data.nickname,
+				});
+
+				io.to(roomName).emit("messageLog", {
+					messageLog: currentMessage,
+					date: new Date(),
+				});
+			}
 		}
 	);
 });
