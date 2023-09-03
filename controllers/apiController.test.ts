@@ -44,6 +44,10 @@ describe("apiController", () => {
 				"first-room-name": {
 					users: [],
 					timer: undefined,
+					timerButtons: {
+						work: [1, 2, 3],
+						break: [4, 5, 6],
+					},
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
@@ -54,6 +58,10 @@ describe("apiController", () => {
 				"second-room-name": {
 					users: [],
 					timer: undefined,
+					timerButtons: {
+						work: [1, 2, 3],
+						break: [4, 5, 6],
+					},
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
@@ -89,6 +97,10 @@ describe("apiController", () => {
 				test: {
 					users: [],
 					timer: undefined,
+					timerButtons: {
+						work: [1, 2, 3],
+						break: [4, 5, 6],
+					},
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
