@@ -99,6 +99,7 @@ instrument(io, {
  * [roomName]:{
  *    timer: setInterval(),
  *    users:[socket.data.nickname, socket.data.nickname, socket.data.nickname]]
+ * 	  timerButtons: number[],
  *    secondsRemaining: number,
  *    isPaused: boolean,
  * 	  isBreak: boolean,
@@ -130,6 +131,10 @@ io.on("connection", async (socket) => {
 		timerStore[roomName] = {
 			users: [],
 			timer: undefined,
+			timerButtons: {
+				work: [5, 10, 15],
+				break: [40, 45, 50],
+			},
 			secondsRemaining: 0,
 			isPaused: false,
 			isBreak: false,
@@ -192,6 +197,10 @@ io.on("connection", async (socket) => {
 						roomName,
 						isPaused: timerStore[roomName].isPaused,
 						isBreak: timerStore[roomName].isBreak,
+						workTimerButtons:
+							timerStore[roomName].timerButtons.work,
+						breakTimerButtons:
+							timerStore[roomName].timerButtons.break,
 						endTimestamp: new Date(
 							Date.now() +
 								timerStore[roomName].secondsRemaining * 1000
@@ -217,6 +226,11 @@ io.on("connection", async (socket) => {
 					});
 				}
 			}
+
+			socket.emit("timerButtons", {
+				workTimerButtons: timerStore[roomName].timerButtons.work,
+				breakTimerButtons: timerStore[roomName].timerButtons.break,
+			});
 
 			// add the user to the room
 			timerStore[roomName].users.push(socket.data.nickname);
@@ -589,6 +603,32 @@ io.on("connection", async (socket) => {
 				durationInSeconds: 0,
 				io,
 				timerStore,
+			});
+		}
+	);
+
+	socket.on(
+		"updateTimerButtons",
+		// eslint-disable-next-line no-shadow
+		async ({ roomName, timerButtons, isBreak }) => {
+			timerStore[roomName].timerButtons[isBreak ? "break" : "work"] =
+				timerButtons;
+
+			await writeToDb({
+				roomName,
+				isPaused: timerStore[roomName].isPaused,
+				isBreak: timerStore[roomName].isBreak,
+				endTimestamp: new Date(
+					Date.now() + timerStore[roomName].secondsRemaining * 1000
+				),
+				originalDuration: timerStore[roomName].originalDuration,
+				workTimerButtons: timerStore[roomName].timerButtons.work,
+				breakTimerButtons: timerStore[roomName].timerButtons.break,
+			});
+
+			io.to(roomName).emit("timerButtons", {
+				workTimerButtons: timerStore[roomName].timerButtons.work,
+				breakTimerButtons: timerStore[roomName].timerButtons.break,
 			});
 		}
 	);

@@ -37,6 +37,14 @@ const timerSchema = new mongoose.Schema({
 		type: Date,
 		required: false,
 	},
+	workTimerButtons: {
+		type: [Number],
+		required: true,
+	},
+	breakTimerButtons: {
+		type: [Number],
+		required: true,
+	},
 	originalDuration: {
 		type: Number,
 		required: true,

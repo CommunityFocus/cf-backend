@@ -2,6 +2,10 @@ export interface TimerStore {
 	[key: string]: {
 		users: string[];
 		timer: NodeJS.Timeout | undefined;
+		timerButtons: {
+			work: number[];
+			break: number[];
+		};
 		secondsRemaining: number;
 		isPaused: boolean;
 		isBreak: boolean;
