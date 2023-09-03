@@ -99,6 +99,7 @@ instrument(io, {
  * [roomName]:{
  *    timer: setInterval(),
  *    users:[socket.data.nickname, socket.data.nickname, socket.data.nickname]]
+ * 	  timerButtons: number[],
  *    secondsRemaining: number,
  *    isPaused: boolean,
  * 	  isBreak: boolean,
@@ -130,6 +131,10 @@ io.on("connection", async (socket) => {
 		timerStore[roomName] = {
 			users: [],
 			timer: undefined,
+			timerButtons: {
+				work: [5, 10, 15, 20, 25, 30],
+				break: [1, 2, 5, 10, 15, 30],
+			},
 			secondsRemaining: 0,
 			isPaused: false,
 			isBreak: false,
@@ -180,6 +185,11 @@ io.on("connection", async (socket) => {
 					timerStore[roomName].originalDuration =
 						timerData.originalDuration;
 
+					timerStore[roomName].timerButtons.work =
+						timerData.workTimerButtons;
+					timerStore[roomName].timerButtons.break =
+						timerData.breakTimerButtons;
+
 					startCountdown({
 						roomName,
 						durationInSeconds:
@@ -192,6 +202,10 @@ io.on("connection", async (socket) => {
 						roomName,
 						isPaused: timerStore[roomName].isPaused,
 						isBreak: timerStore[roomName].isBreak,
+						workTimerButtons:
+							timerStore[roomName].timerButtons.work,
+						breakTimerButtons:
+							timerStore[roomName].timerButtons.break,
 						endTimestamp: new Date(
 							Date.now() +
 								timerStore[roomName].secondsRemaining * 1000
@@ -217,6 +231,11 @@ io.on("connection", async (socket) => {
 					});
 				}
 			}
+
+			socket.emit("timerButtons", {
+				workTimerButtons: timerStore[roomName].timerButtons.work,
+				breakTimerButtons: timerStore[roomName].timerButtons.break,
+			});
 
 			// add the user to the room
 			timerStore[roomName].users.push(socket.data.nickname);
@@ -590,6 +609,75 @@ io.on("connection", async (socket) => {
 				io,
 				timerStore,
 			});
+		}
+	);
+
+	socket.on(
+		"updateTimerButtons",
+		// eslint-disable-next-line no-shadow
+		async ({ roomName, timerButtons, isBreak }) => {
+			const previousTimerButtons =
+				timerStore[roomName].timerButtons[isBreak ? "break" : "work"];
+
+			timerStore[roomName].timerButtons[isBreak ? "break" : "work"] =
+				timerButtons;
+
+			await writeToDb({
+				roomName,
+				isPaused: timerStore[roomName].isPaused,
+				isBreak: timerStore[roomName].isBreak,
+				endTimestamp: new Date(
+					Date.now() + timerStore[roomName].secondsRemaining * 1000
+				),
+				originalDuration: timerStore[roomName].originalDuration,
+				workTimerButtons: timerStore[roomName].timerButtons.work,
+				breakTimerButtons: timerStore[roomName].timerButtons.break,
+			});
+
+			io.to(roomName).emit("timerButtons", {
+				workTimerButtons: timerStore[roomName].timerButtons.work,
+				breakTimerButtons: timerStore[roomName].timerButtons.break,
+			});
+
+			let currentMessage = "";
+			// if added a timer, then send a message to the room
+			if (previousTimerButtons.length < timerButtons.length) {
+				currentMessage = messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "addedTimer",
+					value: `${timerButtons[timerButtons.length - 1]}`,
+				});
+			}
+
+			// if removed a timer, then send a message to the room
+			if (previousTimerButtons.length > timerButtons.length) {
+				currentMessage = messageList({
+					user: socket.data.nickname,
+					room: roomName,
+					message: "removedTimer",
+					value: `${
+						previousTimerButtons.filter(
+							(timer) =>
+								!timerButtons.includes(timer) &&
+								timer !== undefined
+						)[0]
+					}`,
+				});
+			}
+
+			if (currentMessage.length > 0) {
+				await writeMessageToDb({
+					roomName,
+					message: currentMessage,
+					userName: socket.data.nickname,
+				});
+
+				io.to(roomName).emit("messageLog", {
+					messageLog: currentMessage,
+					date: new Date(),
+				});
+			}
 		}
 	);
 });

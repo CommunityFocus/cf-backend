@@ -9,6 +9,8 @@ export interface TimerModel {
 	pausedAt?: Date;
 	createdAt: Date;
 	updatedAt: Date;
+	workTimerButtons: number[];
+	breakTimerButtons: number[];
 	originalDuration: number;
 	messageHistory: {
 		userName: string;
@@ -38,6 +40,8 @@ export const writeToDb = async ({
 	endTimestamp,
 	pausedAt,
 	originalDuration,
+	workTimerButtons,
+	breakTimerButtons,
 }: Partial<TimerModel>): Promise<
 	mongoose.Query<
 		TimerModel | null,
@@ -55,6 +59,8 @@ export const writeToDb = async ({
 			pausedAt,
 			updatedAt: new Date(),
 			originalDuration,
+			workTimerButtons,
+			breakTimerButtons,
 		},
 	};
 

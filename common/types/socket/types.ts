@@ -32,6 +32,17 @@ export interface EmitUsersInRoomArgs {
 	userList: string[];
 }
 
+export interface EmitTimerButtonsArgs {
+	workTimerButtons: number[];
+	breakTimerButtons: number[];
+}
+
+export interface EmitTimerButtonUpdateArgs {
+	timerButtons: number[];
+	isBreak: boolean;
+	roomName: string;
+}
+
 // all emit events
 export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
@@ -42,6 +53,7 @@ export interface ServerToClientEvents {
 	messageLogArray: (data: {
 		messageHistory: { userName: string; message: string; date?: Date }[];
 	}) => void;
+	timerButtons: (data: EmitTimerButtonsArgs) => void;
 }
 
 // socket.on
@@ -54,6 +66,7 @@ export interface ClientToServerEvents {
 	breakTimer: (data: EmitWorkBreakTimerArgs) => void;
 	workTimer: (data: EmitWorkBreakTimerArgs) => void;
 	changeUsername: (data: { userName: string }) => void;
+	updateTimerButtons: (data: EmitTimerButtonUpdateArgs) => void;
 }
 
 // io.on
