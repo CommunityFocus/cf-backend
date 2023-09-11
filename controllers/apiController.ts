@@ -57,6 +57,7 @@ export const slugHandler = (
 export const contributorsHandler = (
 	req: RequestWithTimerStore,
 	res: Response
+	// eslint-disable-next-line consistent-return
 ): ExpressRouteReturnType => {
 	console.log("Contributors route hit.");
 	const repoLinks = [
@@ -126,7 +127,7 @@ export const contributorsHandler = (
 				});
 			})
 			.catch((err) => {
-				console.log(err);
+				console.log(err.response.data);
 				return res.status(500).json({
 					message: "Error fetching contributors.",
 					api_error: err.response.statusText,

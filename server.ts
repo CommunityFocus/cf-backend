@@ -28,6 +28,7 @@ import {
 } from "./common/models/dbHelpers";
 import messageList from "./common/models/MessageList";
 import formatTimestamp from "./helpers/formatTimestamp";
+import frontendRouteRooms from "./common/common";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -143,10 +144,12 @@ io.on("connection", async (socket) => {
 			isTimerRunning: false,
 		};
 	}
-	// console.log("timerStore", timerStore);
 
 	// if there is a destroy timer countdown, clear it
-	if (timerStore[roomName].destroyTimer && roomName !== "default") {
+	if (
+		timerStore[roomName].destroyTimer &&
+		!frontendRouteRooms.includes(roomName)
+	) {
 		console.log("Clearing destroy timer for:", roomName);
 		clearInterval(timerStore[roomName].destroyTimer);
 	}
@@ -159,7 +162,7 @@ io.on("connection", async (socket) => {
 		socket.data.nickname =
 			userName === "defaultUser" ? socket.id : userName;
 
-		if (timerStore[roomName] && roomName !== "default") {
+		if (timerStore[roomName] && !frontendRouteRooms.includes(roomName)) {
 			if (!timerStore[roomName].timer) {
 				const timerData = await readFromDb({ roomName });
 
@@ -283,11 +286,13 @@ io.on("connection", async (socket) => {
 		}
 	});
 
-	console.log(
-		`User connected ${socket.data.nickname} ${
-			roomName ? `to room ${roomName}` : ""
-		}`
-	);
+	// if (!frontendRouteRooms.includes(roomName)) {
+	// 	console.log(
+	// 		`User ${socket.data.nickname || socket.id} connected ${
+	// 			roomName ? `to room ${roomName}` : ""
+	// 		}`
+	// 	);
+	// }
 
 	socket.on("changeUsername", async ({ userName }: { userName: string }) => {
 		if (timerStore[roomName]) {
@@ -329,7 +334,7 @@ io.on("connection", async (socket) => {
 	});
 
 	socket.on("disconnect", async () => {
-		if (timerStore[roomName] && roomName !== "default") {
+		if (timerStore[roomName] && !frontendRouteRooms.includes(roomName)) {
 			const currentMessage = messageList({
 				user: socket.data.nickname,
 				room: roomName,
@@ -389,7 +394,7 @@ io.on("connection", async (socket) => {
 		// eslint-disable-next-line no-shadow
 		async ({ roomName, durationInSeconds }: EmitStartCountdownArgs) => {
 			console.log({ roomName, durationInSeconds });
-			if (roomName !== "default") {
+			if (!frontendRouteRooms.includes(roomName)) {
 				timerStore[roomName].isPaused = false;
 				timerStore[roomName].originalDuration = durationInSeconds;
 				await writeToDb({
@@ -487,7 +492,7 @@ io.on("connection", async (socket) => {
 
 	// eslint-disable-next-line no-shadow
 	socket.on("resetCountdown", async ({ roomName }: EmitWithRoomNameArgs) => {
-		if (roomName !== "default") {
+		if (!frontendRouteRooms.includes(roomName)) {
 			timerStore[roomName].isPaused = false;
 			await writeToDb({
 				roomName,
