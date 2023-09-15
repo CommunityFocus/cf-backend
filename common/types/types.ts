@@ -13,5 +13,9 @@ export interface TimerStore {
 		originalDuration: number;
 		heartbeatCounter: number;
 		isTimerRunning: boolean;
+		timerTitle: {
+			workTitle: string;
+			breakTitle: string;
+		};
 	};
 }

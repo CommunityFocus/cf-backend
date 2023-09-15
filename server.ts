@@ -142,6 +142,10 @@ io.on("connection", async (socket) => {
 			originalDuration: 0,
 			heartbeatCounter: 0,
 			isTimerRunning: false,
+			timerTitle: {
+				workTitle: "Let's get some work done!",
+				breakTitle: "Time for a break!",
+			},
 		};
 	}
 
@@ -192,6 +196,10 @@ io.on("connection", async (socket) => {
 						timerData.workTimerButtons;
 					timerStore[roomName].timerButtons.break =
 						timerData.breakTimerButtons;
+					timerStore[roomName].timerTitle.workTitle =
+						timerData.workTitle;
+					timerStore[roomName].timerTitle.breakTitle =
+						timerData.breakTitle;
 
 					startCountdown({
 						roomName,
@@ -214,6 +222,8 @@ io.on("connection", async (socket) => {
 								timerStore[roomName].secondsRemaining * 1000
 						),
 						originalDuration: timerStore[roomName].originalDuration,
+						workTitle: timerStore[roomName].timerTitle.workTitle,
+						breakTitle: timerStore[roomName].timerTitle.breakTitle,
 					});
 
 					const currentMessage = messageList({
@@ -280,6 +290,12 @@ io.on("connection", async (socket) => {
 			io.to(roomName).emit("usersInRoom", {
 				numUsers: timerStore[roomName].users.length,
 				userList: timerStore[roomName].users,
+			});
+
+			socket.emit("updatedTitle", {
+				title: timerStore[roomName].isBreak
+					? timerStore[roomName].timerTitle.breakTitle
+					: timerStore[roomName].timerTitle.workTitle,
 			});
 
 			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
@@ -567,6 +583,12 @@ io.on("connection", async (socket) => {
 				date: new Date(),
 			});
 
+			io.to(roomName).emit("updatedTitle", {
+				title: timerStore[roomName].isBreak
+					? timerStore[roomName].timerTitle.breakTitle
+					: timerStore[roomName].timerTitle.workTitle,
+			});
+
 			startCountdown({
 				roomName,
 				durationInSeconds: 0,
@@ -606,6 +628,12 @@ io.on("connection", async (socket) => {
 			io.to(roomName).emit("messageLog", {
 				messageLog: currentMessage,
 				date: new Date(),
+			});
+
+			io.to(roomName).emit("updatedTitle", {
+				title: timerStore[roomName].isBreak
+					? timerStore[roomName].timerTitle.breakTitle
+					: timerStore[roomName].timerTitle.workTitle,
 			});
 
 			startCountdown({
@@ -685,6 +713,59 @@ io.on("connection", async (socket) => {
 			}
 		}
 	);
+
+	// eslint-disable-next-line no-shadow
+	socket.on("updateTitle", async ({ roomName, title }) => {
+		if (
+			title.length > 0 &&
+			typeof title === "string" &&
+			// Alphanumeric characters, spaces, underscores, dash, period, comma, colon, semicolon, apostrophe, question mark, exclamation point, and parentheses
+			/^[a-zA-Z0-9 _.,:;'"?!()]+$/.test(title)
+		) {
+			if (timerStore[roomName].isBreak) {
+				await writeToDb({
+					roomName,
+					breakTitle: title,
+					workTitle: timerStore[roomName].timerTitle.workTitle,
+				});
+				timerStore[roomName].timerTitle.breakTitle = title;
+			} else {
+				await writeToDb({
+					roomName,
+					workTitle: title,
+					breakTitle: timerStore[roomName].timerTitle.breakTitle,
+				});
+				timerStore[roomName].timerTitle.workTitle = title;
+			}
+
+			io.to(roomName).emit("updatedTitle", {
+				title,
+			});
+
+			const currentMessage = messageList({
+				user: socket.data.nickname,
+				room: roomName,
+				message: "changedtitle",
+				value: title,
+				altValue: timerStore[roomName].isBreak ? "break" : "work",
+			});
+
+			await writeMessageToDb({
+				roomName,
+				message: currentMessage,
+				userName: socket.data.nickname,
+			});
+
+			io.to(roomName).emit("messageLog", {
+				messageLog: currentMessage,
+				date: new Date(),
+			});
+
+			console.log(
+				`User ${socket.data.nickname} updated title to ${title} in room ${roomName}`
+			);
+		}
+	});
 });
 
 export { io, httpServer, timerStore };

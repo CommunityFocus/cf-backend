@@ -62,6 +62,9 @@ const messageList = ({
 
 		case "removedtimer":
 			return `${user} removed a ${value ? `${value} min` : ""} timer`;
+
+		case "changedtitle":
+			return `${user} changed the title to ${value} for ${altValue} session`;
 		default:
 			return `${user} triggered an event in ${room}`;
 	}

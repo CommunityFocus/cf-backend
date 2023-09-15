@@ -54,6 +54,7 @@ export interface ServerToClientEvents {
 		messageHistory: { userName: string; message: string; date?: Date }[];
 	}) => void;
 	timerButtons: (data: EmitTimerButtonsArgs) => void;
+	updatedTitle: (data: { title: string }) => void;
 }
 
 // socket.on
@@ -67,6 +68,7 @@ export interface ClientToServerEvents {
 	workTimer: (data: EmitWorkBreakTimerArgs) => void;
 	changeUsername: (data: { userName: string }) => void;
 	updateTimerButtons: (data: EmitTimerButtonUpdateArgs) => void;
+	updateTitle: (data: { roomName: string; title: string }) => void;
 }
 
 // io.on

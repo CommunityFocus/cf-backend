@@ -17,6 +17,8 @@ export interface TimerModel {
 		message: string;
 		date?: Date;
 	}[];
+	workTitle: string;
+	breakTitle: string;
 }
 
 export const readFromDb = async ({
@@ -30,7 +32,7 @@ export const readFromDb = async ({
 		return undefined;
 	}
 
-	return timer;
+	return timer.toObject() as TimerModel;
 };
 
 export const writeToDb = async ({
@@ -42,6 +44,8 @@ export const writeToDb = async ({
 	originalDuration,
 	workTimerButtons,
 	breakTimerButtons,
+	workTitle,
+	breakTitle,
 }: Partial<TimerModel>): Promise<
 	mongoose.Query<
 		TimerModel | null,
@@ -61,6 +65,8 @@ export const writeToDb = async ({
 			originalDuration,
 			workTimerButtons,
 			breakTimerButtons,
+			workTitle,
+			breakTitle,
 		},
 	};
 
