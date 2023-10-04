@@ -77,7 +77,9 @@ const startCountdown = async ({
 				});
 
 				if (durationInSeconds > 1) {
-					io.to(roomName).emit("endTimer");
+					io.to(roomName).emit("endTimer", {
+						isBreakMode: !timerStore[roomName].isBreak,
+					});
 					const currentMessage = messageList({
 						user: "Anonymous",
 						room: roomName,
