@@ -55,6 +55,7 @@ export interface ServerToClientEvents {
 	}) => void;
 	timerButtons: (data: EmitTimerButtonsArgs) => void;
 	updatedTitle: (data: { title: string }) => void;
+	endTimer: () => void;
 }
 
 // socket.on
