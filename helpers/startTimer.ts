@@ -77,6 +77,7 @@ const startCountdown = async ({
 				});
 
 				if (durationInSeconds > 1) {
+					io.to(roomName).emit("endTimer");
 					const currentMessage = messageList({
 						user: "Anonymous",
 						room: roomName,
