@@ -1,1 +1,1 @@
-export default ["default", "contributors"];
+export default ["default", "contributors", "admin", "timerlist"];
