@@ -8,7 +8,7 @@ import { timerRequest } from "./helpers/timerRequest";
 import { destroyTimer } from "./helpers/destroyTimer";
 import apiRoutes from "./routes/apiRoutes";
 import storeMiddleware from "./middleware/storeMiddleware";
-import { TimerStore } from "./common/types/types";
+
 import {
 	ClientToServerEvents,
 	InterServerEvents,
@@ -29,6 +29,7 @@ import {
 import messageList from "./common/models/MessageList";
 import formatTimestamp from "./helpers/formatTimestamp";
 import frontendRouteRooms from "./common/common";
+import timerStore from "./common/timerStore";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -92,24 +93,6 @@ instrument(io, {
 	},
 	mode: "development",
 });
-
-/**
- * Store the timers for each room
- * Example of timerStore object
- * {
- * [roomName]:{
- *    timer: setInterval(),
- *    users:[socket.data.nickname, socket.data.nickname, socket.data.nickname]]
- * 	  timerButtons: number[],
- *    secondsRemaining: number,
- *    isPaused: boolean,
- * 	  isBreak: boolean,
- *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
- *    originalDuration: number // Original duration of the timer in seconds for resetting the timer
- *    }
- * }
- */
-const timerStore: TimerStore = {};
 
 // routes
 app.get("/", (req: Request, res: Response) => {
