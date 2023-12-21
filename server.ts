@@ -28,7 +28,7 @@ import {
 } from "./common/models/dbHelpers";
 import messageList from "./common/models/MessageList";
 import formatTimestamp from "./helpers/formatTimestamp";
-import frontendRouteRooms from "./common/common";
+import { frontendRouteRooms, leaderboardRooms } from "./common/common";
 import timerStore from "./common/timerStore";
 
 const app = express();

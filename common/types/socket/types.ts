@@ -46,6 +46,7 @@ export interface EmitTimerButtonUpdateArgs {
 // all emit events
 export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
+	publicTimers: (data: { globalUsersCount: number }) => void;
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
 	workBreakResponse: (data: EmitWorkBreakResponseArgs) => void;

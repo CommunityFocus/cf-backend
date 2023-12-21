@@ -22,4 +22,11 @@ export default (
 		numUsers: timerStore[roomName].users.length,
 		userList: timerStore[roomName].users,
 	});
+
+	// emit the list of users, count of users in the room, and count of users globally to 'timerlist' room
+	io.to("timerlist").emit("publicTimers", {
+		globalUsersCount: Object.keys(timerStore).length,
+	});
+
+	console.log("user count updated");
 };
