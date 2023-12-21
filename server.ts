@@ -28,8 +28,9 @@ import {
 } from "./common/models/dbHelpers";
 import messageList from "./common/models/MessageList";
 import formatTimestamp from "./helpers/formatTimestamp";
-import { frontendRouteRooms, leaderboardRooms } from "./common/common";
+import { frontendRouteRooms, statRooms } from "./common/common";
 import timerStore from "./common/timerStore";
+import sendUserCount from "./helpers/sendUserCount";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -270,10 +271,10 @@ io.on("connection", async (socket) => {
 			});
 
 			// emit the updated number of users in the room
-			io.to(roomName).emit("usersInRoom", {
-				numUsers: timerStore[roomName].users.length,
-				userList: timerStore[roomName].users,
-			});
+			// io.to(roomName).emit("usersInRoom", {
+			// 	numUsers: timerStore[roomName].users.length,
+			// 	userList: timerStore[roomName].users,
+			// });
 
 			socket.emit("updatedTitle", {
 				title: timerStore[roomName].isBreak
@@ -283,6 +284,17 @@ io.on("connection", async (socket) => {
 
 			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
 		}
+
+		if (
+			timerStore[roomName] &&
+			(!frontendRouteRooms.includes(roomName) ||
+				statRooms.includes(roomName))
+		) {
+			// emit the updated number of users in the room
+			sendUserCount(io, roomName, timerStore);
+		}
+
+		// sendUserCount(io, roomName, timerStore);
 	});
 
 	// if (!frontendRouteRooms.includes(roomName)) {
@@ -325,11 +337,21 @@ io.on("connection", async (socket) => {
 				date: new Date(),
 			});
 
-			io.to(roomName).emit("usersInRoom", {
-				numUsers: timerStore[roomName].users.length,
-				userList: timerStore[roomName].users,
-			});
+			// io.to(roomName).emit("usersInRoom", {
+			// 	numUsers: timerStore[roomName].users.length,
+			// 	userList: timerStore[roomName].users,
+			// });
 		}
+
+		if (
+			timerStore[roomName] &&
+			(!frontendRouteRooms.includes(roomName) ||
+				statRooms.includes(roomName))
+		) {
+			// emit the updated number of users in the room
+			sendUserCount(io, roomName, timerStore);
+		}
+		// sendUserCount(io, roomName, timerStore);
 	});
 
 	socket.on("disconnect", async () => {
@@ -360,11 +382,11 @@ io.on("connection", async (socket) => {
 				`User ${socket.data.nickname} disconnected from room ${roomName}`
 			);
 
-			// emit the updated number of users in the room
-			io.to(roomName).emit("usersInRoom", {
-				numUsers: timerStore[roomName].users.length,
-				userList: timerStore[roomName].users,
-			});
+			// // emit the updated number of users in the room
+			// io.to(roomName).emit("usersInRoom", {
+			// 	numUsers: timerStore[roomName].users.length,
+			// 	userList: timerStore[roomName].users,
+			// });
 
 			if (timerStore[roomName].users.length === 0) {
 				// if there are no users left in the room, clear the timer and delete the room after a delay
@@ -381,6 +403,16 @@ io.on("connection", async (socket) => {
 			}
 		}
 
+		if (
+			timerStore[roomName] &&
+			(!frontendRouteRooms.includes(roomName) ||
+				statRooms.includes(roomName))
+		) {
+			// emit the updated number of users in the room
+			sendUserCount(io, roomName, timerStore);
+		}
+
+		// sendUserCount(io, roomName, timerStore);
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
 
 		// leave the room

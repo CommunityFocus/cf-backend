@@ -5,4 +5,4 @@ export const frontendRouteRooms = [
 	"timerlist",
 ];
 
-export const leaderboardRooms = ["admin", "timerlist"];
+export const statRooms = ["admin", "timerlist"];

@@ -24,9 +24,13 @@ export default (
 	});
 
 	// emit the list of users, count of users in the room, and count of users globally to 'timerlist' room
-	io.to("timerlist").emit("publicTimers", {
-		globalUsersCount: Object.keys(timerStore).length,
-	});
-
-	console.log("user count updated");
+	io.to("admin")
+		.to("timerlist")
+		.emit("publicTimers", {
+			roomStats: Object.keys(timerStore).map((room) => ({
+				room,
+				numUsers: timerStore[room].users.length,
+				userList: timerStore[room].users,
+			})),
+		});
 };
