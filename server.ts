@@ -185,6 +185,7 @@ io.on("connection", async (socket) => {
 						timerData.workTitle;
 					timerStore[roomName].timerTitle.breakTitle =
 						timerData.breakTitle;
+					timerStore[roomName].isPublic = timerData.isPublic;
 
 					startCountdown({
 						roomName,
@@ -399,6 +400,9 @@ io.on("connection", async (socket) => {
 				timerStore[roomName].destroyTimer = setTimeout(
 					() => {
 						destroyTimer({ roomName, timerStore });
+
+						// emit the updated number of users in the room
+						sendUserCount(io, roomName, timerStore);
 					},
 					120000 // give the users 2 minutes to rejoin
 				);
