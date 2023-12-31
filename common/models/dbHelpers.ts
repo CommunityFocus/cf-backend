@@ -19,6 +19,7 @@ export interface TimerModel {
 	}[];
 	workTitle: string;
 	breakTitle: string;
+	isPublic: boolean;
 }
 
 export const readFromDb = async ({
@@ -46,6 +47,7 @@ export const writeToDb = async ({
 	breakTimerButtons,
 	workTitle,
 	breakTitle,
+	isPublic,
 }: Partial<TimerModel>): Promise<
 	mongoose.Query<
 		TimerModel | null,
@@ -67,6 +69,7 @@ export const writeToDb = async ({
 			breakTimerButtons,
 			workTitle,
 			breakTitle,
+			isPublic,
 		},
 	};
 

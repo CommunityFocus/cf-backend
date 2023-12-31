@@ -230,6 +230,10 @@ io.on("connection", async (socket) => {
 				}
 			}
 
+			io.to(roomName).emit("togglePublicUpdate", {
+				isPublic: timerStore[roomName].isPublic,
+			});
+
 			socket.emit("timerButtons", {
 				workTimerButtons: timerStore[roomName].timerButtons.work,
 				breakTimerButtons: timerStore[roomName].timerButtons.break,
@@ -729,6 +733,48 @@ io.on("connection", async (socket) => {
 			}
 		}
 	);
+
+	// eslint-disable-next-line no-shadow
+	socket.on("togglePublic", async ({ roomName }) => {
+		if (timerStore[roomName].isPublic === true) {
+			timerStore[roomName].isPublic = false;
+		} else {
+			timerStore[roomName].isPublic = true;
+		}
+		io.to(roomName).emit("togglePublicUpdate", {
+			isPublic: timerStore[roomName].isPublic,
+		});
+
+		await writeToDb({
+			roomName,
+			isPublic: timerStore[roomName].isPublic,
+		});
+
+		const currentMessage = messageList({
+			user: socket.data.nickname,
+			room: roomName,
+			message: "publicToggle",
+			value: timerStore[roomName].isPublic ? "public" : "private",
+		});
+
+		await writeMessageToDb({
+			roomName,
+			message: currentMessage,
+			userName: socket.data.nickname,
+		});
+
+		io.to(roomName).emit("messageLog", {
+			messageLog: currentMessage,
+			date: new Date(),
+		});
+
+		console.log(
+			currentMessage,
+			`User ${socket.data.nickname} changed room ${roomName} to ${
+				timerStore[roomName].isPublic ? "public" : "private"
+			}`
+		);
+	});
 
 	// eslint-disable-next-line no-shadow
 	socket.on("updateTitle", async ({ roomName, title }) => {

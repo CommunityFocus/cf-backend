@@ -59,6 +59,7 @@ export interface ServerToClientEvents {
 	timerButtons: (data: EmitTimerButtonsArgs) => void;
 	updatedTitle: (data: { title: string }) => void;
 	endTimer: (data: { isBreakMode: boolean }) => void;
+	togglePublicUpdate: (data: { isPublic: boolean }) => void;
 }
 
 // socket.on
@@ -73,6 +74,7 @@ export interface ClientToServerEvents {
 	changeUsername: (data: { userName: string }) => void;
 	updateTimerButtons: (data: EmitTimerButtonUpdateArgs) => void;
 	updateTitle: (data: { roomName: string; title: string }) => void;
+	togglePublic: (data: { roomName: string; isPublic: boolean }) => void;
 }
 
 // io.on

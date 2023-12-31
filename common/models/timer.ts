@@ -70,6 +70,11 @@ const timerSchema = new mongoose.Schema({
 		type: [messageSchema],
 		required: false,
 	},
+	isPublic: {
+		type: Boolean,
+		required: true,
+		default: false,
+	},
 });
 
 const Timer = mongoose.model("Timer", timerSchema);
