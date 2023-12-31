@@ -130,6 +130,7 @@ io.on("connection", async (socket) => {
 				workTitle: "Let's get some work done!",
 				breakTitle: "Time for a break!",
 			},
+			isPublic: false,
 		};
 	}
 

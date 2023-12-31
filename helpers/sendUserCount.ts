@@ -6,6 +6,7 @@ import {
 	SocketData,
 } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
+import { frontendRouteRooms } from "../common/common";
 
 export default (
 	io: Server<
@@ -24,13 +25,32 @@ export default (
 	});
 
 	// emit the list of users, count of users in the room, and count of users globally to 'timerlist' room
-	io.to("admin")
-		.to("timerlist")
-		.emit("publicTimers", {
-			roomStats: Object.keys(timerStore).map((room) => ({
+	io.to("admin").emit("publicTimers", {
+		roomStats: Object.keys(timerStore)
+			.filter((x) => !frontendRouteRooms.includes(x))
+			.sort(
+				(a, b) =>
+					timerStore[b].users.length - timerStore[a].users.length
+			)
+			.map((room) => ({
 				room,
 				numUsers: timerStore[room].users.length,
 				userList: timerStore[room].users,
 			})),
-		});
+	});
+
+	io.to("timerlist").emit("publicTimers", {
+		roomStats: Object.keys(timerStore)
+			.filter((x) => !frontendRouteRooms.includes(x))
+			.filter((x) => timerStore[x].isPublic)
+			.sort(
+				(a, b) =>
+					timerStore[b].users.length - timerStore[a].users.length
+			)
+			.map((room) => ({
+				room,
+				numUsers: timerStore[room].users.length,
+				userList: timerStore[room].users,
+			})),
+	});
 };

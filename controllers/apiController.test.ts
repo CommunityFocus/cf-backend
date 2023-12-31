@@ -58,6 +58,7 @@ describe("apiController", () => {
 						workTitle: "work",
 						breakTitle: "break",
 					},
+					isPublic: false,
 				},
 				"second-room-name": {
 					users: [],
@@ -76,6 +77,7 @@ describe("apiController", () => {
 						workTitle: "work",
 						breakTitle: "break",
 					},
+					isPublic: false,
 				},
 			};
 
@@ -119,6 +121,7 @@ describe("apiController", () => {
 						workTitle: "work",
 						breakTitle: "break",
 					},
+					isPublic: false,
 				},
 			};
 			generateSlugMock.mockReturnValue("test");

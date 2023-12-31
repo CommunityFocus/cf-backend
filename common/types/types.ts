@@ -17,5 +17,6 @@ export interface TimerStore {
 			workTitle: string;
 			breakTitle: string;
 		};
+		isPublic: boolean;
 	};
 }

@@ -14,6 +14,7 @@ import { TimerStore } from "./types/types";
  *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
  *    originalDuration: number // Original duration of the timer in seconds for resetting the timer
  *    }
+ *    ......
  * }
  */
 
