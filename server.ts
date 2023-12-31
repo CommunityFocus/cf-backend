@@ -298,8 +298,6 @@ io.on("connection", async (socket) => {
 			// emit the updated number of users in the room
 			sendUserCount(io, roomName, timerStore);
 		}
-
-		// sendUserCount(io, roomName, timerStore);
 	});
 
 	// if (!frontendRouteRooms.includes(roomName)) {
@@ -356,7 +354,6 @@ io.on("connection", async (socket) => {
 			// emit the updated number of users in the room
 			sendUserCount(io, roomName, timerStore);
 		}
-		// sendUserCount(io, roomName, timerStore);
 	});
 
 	socket.on("disconnect", async () => {
@@ -417,7 +414,6 @@ io.on("connection", async (socket) => {
 			sendUserCount(io, roomName, timerStore);
 		}
 
-		// sendUserCount(io, roomName, timerStore);
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
 
 		// leave the room
@@ -744,6 +740,9 @@ io.on("connection", async (socket) => {
 		io.to(roomName).emit("togglePublicUpdate", {
 			isPublic: timerStore[roomName].isPublic,
 		});
+
+		// emit the updated number of users in the room
+		sendUserCount(io, roomName, timerStore);
 
 		await writeToDb({
 			roomName,

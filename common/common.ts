@@ -2,7 +2,7 @@ export const frontendRouteRooms = [
 	"default",
 	"contributors",
 	"admin",
-	"timerlist",
+	"public-timers",
 ];
 
-export const statRooms = ["admin", "timerlist"];
+export const statRooms = ["admin", "public-timers"];
