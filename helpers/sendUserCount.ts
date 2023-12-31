@@ -24,7 +24,6 @@ export default (
 		userList: timerStore[roomName].users,
 	});
 
-	// emit the list of users, count of users in the room, and count of users globally to 'public-timers' room
 	io.to("admin").emit("publicTimers", {
 		roomStats: Object.keys(timerStore)
 			.filter((x) => !frontendRouteRooms.includes(x))

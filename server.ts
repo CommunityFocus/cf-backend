@@ -340,11 +340,6 @@ io.on("connection", async (socket) => {
 				messageLog: currentMessage,
 				date: new Date(),
 			});
-
-			// io.to(roomName).emit("usersInRoom", {
-			// 	numUsers: timerStore[roomName].users.length,
-			// 	userList: timerStore[roomName].users,
-			// });
 		}
 
 		if (
@@ -384,12 +379,6 @@ io.on("connection", async (socket) => {
 			console.log(
 				`User ${socket.data.nickname} disconnected from room ${roomName}`
 			);
-
-			// // emit the updated number of users in the room
-			// io.to(roomName).emit("usersInRoom", {
-			// 	numUsers: timerStore[roomName].users.length,
-			// 	userList: timerStore[roomName].users,
-			// });
 
 			if (timerStore[roomName].users.length === 0) {
 				// if there are no users left in the room, clear the timer and delete the room after a delay
