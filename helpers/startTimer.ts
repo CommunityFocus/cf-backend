@@ -1,5 +1,8 @@
+import messageList from "../common/models/MessageList";
+import { writeMessageToDb } from "../common/models/dbHelpers";
 import { ServerType } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
+import formatTimestamp from "./formatTimestamp";
 
 interface StartCountdownArgs {
 	roomName: string;
@@ -47,13 +50,57 @@ const startCountdown = async ({
 		durationInSeconds);
 
 	// eslint-disable-next-line no-param-reassign
-	timerStore[roomName].timer = setInterval(() => {
+	timerStore[roomName].timer = setInterval(async () => {
 		if (!timerStore[roomName].isPaused) {
 			if (timerStore[roomName].secondsRemaining <= 0) {
+				// eslint-disable-next-line no-param-reassign
+				timerStore[roomName].isTimerRunning = false;
 				clearInterval(timerStore[roomName].timer);
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].secondsRemaining = 0;
+
+				if (durationInSeconds > 1) {
+					if (timerStore[roomName].isBreak) {
+						// eslint-disable-next-line no-param-reassign
+						timerStore[roomName].isBreak = false;
+					} else {
+						// eslint-disable-next-line no-param-reassign
+						timerStore[roomName].isBreak = true;
+					}
+				}
+
+				io.to(roomName).emit("timerResponse", {
+					secondsRemaining: timerStore[roomName].secondsRemaining,
+					isPaused: timerStore[roomName].isPaused,
+					isTimerRunning: timerStore[roomName].isTimerRunning,
+					isBreakMode: timerStore[roomName].isBreak,
+				});
+
+				if (durationInSeconds > 1) {
+					io.to(roomName).emit("endTimer", {
+						isBreakMode: !timerStore[roomName].isBreak,
+					});
+					const currentMessage = messageList({
+						user: "Anonymous",
+						room: roomName,
+						message: "ended",
+						altValue: formatTimestamp(durationInSeconds),
+					});
+
+					await writeMessageToDb({
+						roomName,
+						message: currentMessage,
+						userName: "Anonymous",
+					});
+
+					io.to(roomName).emit("messageLog", {
+						messageLog: currentMessage,
+						date: new Date(),
+					});
+				}
 			} else {
+				// eslint-disable-next-line no-param-reassign
+				timerStore[roomName].isTimerRunning = true;
 				remainingTime--;
 				// eslint-disable-next-line no-param-reassign
 				timerStore[roomName].secondsRemaining = remainingTime;
@@ -70,17 +117,29 @@ const startCountdown = async ({
 					timerStore[roomName].heartbeatCounter % 10 === 0
 				) {
 					io.to(roomName).emit("timerResponse", {
-						secondsRemaining: remainingTime,
+						secondsRemaining: timerStore[roomName].secondsRemaining,
 						isPaused: timerStore[roomName].isPaused,
+						isTimerRunning: timerStore[roomName].isTimerRunning,
+						isBreakMode: timerStore[roomName].isBreak,
 					});
 				}
 			}
 		}
 	}, 1000);
 
+	if (timerStore[roomName].secondsRemaining <= 0) {
+		// eslint-disable-next-line no-param-reassign
+		timerStore[roomName].isTimerRunning = false;
+	} else {
+		// eslint-disable-next-line no-param-reassign
+		timerStore[roomName].isTimerRunning = true;
+	}
+
 	io.to(roomName).emit("timerResponse", {
-		secondsRemaining: remainingTime,
+		secondsRemaining: timerStore[roomName].secondsRemaining,
 		isPaused: timerStore[roomName].isPaused,
+		isTimerRunning: timerStore[roomName].isTimerRunning,
+		isBreakMode: timerStore[roomName].isBreak,
 	});
 };
 

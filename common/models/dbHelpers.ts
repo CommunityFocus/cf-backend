@@ -9,7 +9,17 @@ export interface TimerModel {
 	pausedAt?: Date;
 	createdAt: Date;
 	updatedAt: Date;
+	workTimerButtons: number[];
+	breakTimerButtons: number[];
 	originalDuration: number;
+	messageHistory: {
+		userName: string;
+		message: string;
+		date?: Date;
+	}[];
+	workTitle: string;
+	breakTitle: string;
+	isPublic: boolean;
 }
 
 export const readFromDb = async ({
@@ -19,13 +29,11 @@ export const readFromDb = async ({
 }): Promise<TimerModel | undefined> => {
 	const timer = await Timer.findOne({ roomName });
 
-	console.log("readFromDb", { roomName });
-
 	if (!timer) {
 		return undefined;
 	}
 
-	return timer;
+	return timer.toObject() as TimerModel;
 };
 
 export const writeToDb = async ({
@@ -35,6 +43,11 @@ export const writeToDb = async ({
 	endTimestamp,
 	pausedAt,
 	originalDuration,
+	workTimerButtons,
+	breakTimerButtons,
+	workTitle,
+	breakTitle,
+	isPublic,
 }: Partial<TimerModel>): Promise<
 	mongoose.Query<
 		TimerModel | null,
@@ -52,12 +65,63 @@ export const writeToDb = async ({
 			pausedAt,
 			updatedAt: new Date(),
 			originalDuration,
+			workTimerButtons,
+			breakTimerButtons,
+			workTitle,
+			breakTitle,
+			isPublic,
 		},
 	};
-
-	console.log("writeToDb", { query, update });
 
 	return Timer.findOneAndUpdate(query, update, {
 		upsert: true,
 	});
+};
+
+export const writeMessageToDb = async ({
+	roomName,
+	userName,
+	message,
+}: {
+	roomName: string;
+	userName: string;
+	message: string;
+}): Promise<
+	mongoose.Query<TimerModel, TimerModel, Record<string, unknown>, TimerModel>
+> => {
+	const query = { roomName };
+	const update = {
+		$push: {
+			messageHistory: {
+				userName,
+				message,
+			},
+		},
+	};
+
+	return Timer.findOneAndUpdate(query, update, {
+		upsert: false,
+		new: true,
+	}) as mongoose.Query<
+		TimerModel,
+		TimerModel,
+		Record<string, unknown>,
+		TimerModel
+	>;
+};
+
+export const readMessageFromDb = async ({
+	roomName,
+}: {
+	roomName: string;
+}): Promise<{ messageHistory: TimerModel["messageHistory"] } | undefined> => {
+	const timer = await readFromDb({ roomName });
+
+	if (!timer) {
+		return undefined;
+	}
+
+	return {
+		messageHistory: timer.messageHistory,
+	};
 };
