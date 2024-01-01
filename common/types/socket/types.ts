@@ -46,6 +46,9 @@ export interface EmitTimerButtonUpdateArgs {
 // all emit events
 export interface ServerToClientEvents {
 	usersInRoom: ({ numUsers, userList }: EmitUsersInRoomArgs) => void;
+	publicTimers: (data: {
+		roomStats: { room: string; numUsers: number; userList: string[] }[];
+	}) => void;
 	globalUsers: (data: { globalUsersCount: number }) => void;
 	timerResponse: (data: EmitTimerResponseArgs) => void;
 	workBreakResponse: (data: EmitWorkBreakResponseArgs) => void;
@@ -56,6 +59,13 @@ export interface ServerToClientEvents {
 	timerButtons: (data: EmitTimerButtonsArgs) => void;
 	updatedTitle: (data: { title: string }) => void;
 	endTimer: (data: { isBreakMode: boolean }) => void;
+	togglePublicUpdate: (data: { isPublic: boolean }) => void;
+	"require-admin-auth": (
+		callback: (
+			err: Error | undefined,
+			response: { password: string } | undefined
+		) => void
+	) => void;
 }
 
 // socket.on
@@ -70,6 +80,7 @@ export interface ClientToServerEvents {
 	changeUsername: (data: { userName: string }) => void;
 	updateTimerButtons: (data: EmitTimerButtonUpdateArgs) => void;
 	updateTitle: (data: { roomName: string; title: string }) => void;
+	togglePublic: (data: { roomName: string; isPublic: boolean }) => void;
 }
 
 // io.on

@@ -8,7 +8,7 @@ import { timerRequest } from "./helpers/timerRequest";
 import { destroyTimer } from "./helpers/destroyTimer";
 import apiRoutes from "./routes/apiRoutes";
 import storeMiddleware from "./middleware/storeMiddleware";
-import { TimerStore } from "./common/types/types";
+
 import {
 	ClientToServerEvents,
 	InterServerEvents,
@@ -28,7 +28,9 @@ import {
 } from "./common/models/dbHelpers";
 import messageList from "./common/models/MessageList";
 import formatTimestamp from "./helpers/formatTimestamp";
-import frontendRouteRooms from "./common/common";
+import { frontendRouteRooms, statRooms } from "./common/common";
+import timerStore from "./common/timerStore";
+import sendUserCount from "./helpers/sendUserCount";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -93,24 +95,6 @@ instrument(io, {
 	mode: "development",
 });
 
-/**
- * Store the timers for each room
- * Example of timerStore object
- * {
- * [roomName]:{
- *    timer: setInterval(),
- *    users:[socket.data.nickname, socket.data.nickname, socket.data.nickname]]
- * 	  timerButtons: number[],
- *    secondsRemaining: number,
- *    isPaused: boolean,
- * 	  isBreak: boolean,
- *    destroyTimer?: setTimeout() // optional: Only set if there are no users in the room at any given time
- *    originalDuration: number // Original duration of the timer in seconds for resetting the timer
- *    }
- * }
- */
-const timerStore: TimerStore = {};
-
 // routes
 app.get("/", (req: Request, res: Response) => {
 	res.status(200).json({
@@ -146,6 +130,7 @@ io.on("connection", async (socket) => {
 				workTitle: "Let's get some work done!",
 				breakTitle: "Time for a break!",
 			},
+			isPublic: false,
 		};
 	}
 
@@ -160,8 +145,25 @@ io.on("connection", async (socket) => {
 
 	// eslint-disable-next-line no-shadow
 	socket.on("join", async ({ roomName, userName }: EmitJoinEventArgs) => {
-		// join the room
-		socket.join(roomName);
+		if (roomName === "admin") {
+			try {
+				const response = await socket
+					.timeout(5000)
+					.emitWithAck("require-admin-auth");
+				if (
+					response.password &&
+					response.password === process.env.ADMIN_PASSWORD
+				) {
+					socket.join("admin");
+				}
+			} catch (e: unknown) {
+				console.log("Admin auth failed", e);
+			}
+		} else {
+			// join the room
+			socket.join(roomName);
+		}
+
 		// eslint-disable-next-line no-param-reassign
 		socket.data.nickname =
 			userName === "defaultUser" ? socket.id : userName;
@@ -200,6 +202,7 @@ io.on("connection", async (socket) => {
 						timerData.workTitle;
 					timerStore[roomName].timerTitle.breakTitle =
 						timerData.breakTitle;
+					timerStore[roomName].isPublic = timerData.isPublic;
 
 					startCountdown({
 						roomName,
@@ -245,6 +248,10 @@ io.on("connection", async (socket) => {
 				}
 			}
 
+			io.to(roomName).emit("togglePublicUpdate", {
+				isPublic: timerStore[roomName].isPublic,
+			});
+
 			socket.emit("timerButtons", {
 				workTimerButtons: timerStore[roomName].timerButtons.work,
 				breakTimerButtons: timerStore[roomName].timerButtons.break,
@@ -286,12 +293,6 @@ io.on("connection", async (socket) => {
 				})),
 			});
 
-			// emit the updated number of users in the room
-			io.to(roomName).emit("usersInRoom", {
-				numUsers: timerStore[roomName].users.length,
-				userList: timerStore[roomName].users,
-			});
-
 			socket.emit("updatedTitle", {
 				title: timerStore[roomName].isBreak
 					? timerStore[roomName].timerTitle.breakTitle
@@ -299,6 +300,15 @@ io.on("connection", async (socket) => {
 			});
 
 			console.log(`User ${socket.data.nickname} joined room ${roomName}`);
+		}
+
+		if (
+			timerStore[roomName] &&
+			(!frontendRouteRooms.includes(roomName) ||
+				statRooms.includes(roomName))
+		) {
+			// emit the updated number of users in the room
+			sendUserCount({ io, roomName, timerStore });
 		}
 	});
 
@@ -341,11 +351,15 @@ io.on("connection", async (socket) => {
 				messageLog: currentMessage,
 				date: new Date(),
 			});
+		}
 
-			io.to(roomName).emit("usersInRoom", {
-				numUsers: timerStore[roomName].users.length,
-				userList: timerStore[roomName].users,
-			});
+		if (
+			timerStore[roomName] &&
+			(!frontendRouteRooms.includes(roomName) ||
+				statRooms.includes(roomName))
+		) {
+			// emit the updated number of users in the room
+			sendUserCount({ io, roomName, timerStore });
 		}
 	});
 
@@ -377,12 +391,6 @@ io.on("connection", async (socket) => {
 				`User ${socket.data.nickname} disconnected from room ${roomName}`
 			);
 
-			// emit the updated number of users in the room
-			io.to(roomName).emit("usersInRoom", {
-				numUsers: timerStore[roomName].users.length,
-				userList: timerStore[roomName].users,
-			});
-
 			if (timerStore[roomName].users.length === 0) {
 				// if there are no users left in the room, clear the timer and delete the room after a delay
 				console.log(
@@ -392,10 +400,22 @@ io.on("connection", async (socket) => {
 				timerStore[roomName].destroyTimer = setTimeout(
 					() => {
 						destroyTimer({ roomName, timerStore });
+
+						// emit the updated number of users in the room
+						sendUserCount({ io, roomName, timerStore });
 					},
 					120000 // give the users 2 minutes to rejoin
 				);
 			}
+		}
+
+		if (
+			timerStore[roomName] &&
+			(!frontendRouteRooms.includes(roomName) ||
+				statRooms.includes(roomName))
+		) {
+			// emit the updated number of users in the room
+			sendUserCount({ io, roomName, timerStore });
 		}
 
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
@@ -713,6 +733,50 @@ io.on("connection", async (socket) => {
 			}
 		}
 	);
+
+	// eslint-disable-next-line no-shadow
+	socket.on("togglePublic", async ({ roomName }) => {
+		if (timerStore[roomName].isPublic === true) {
+			timerStore[roomName].isPublic = false;
+		} else {
+			timerStore[roomName].isPublic = true;
+		}
+		io.to(roomName).emit("togglePublicUpdate", {
+			isPublic: timerStore[roomName].isPublic,
+		});
+
+		// emit the updated number of users in the room
+		sendUserCount({ io, roomName, timerStore });
+		await writeToDb({
+			roomName,
+			isPublic: timerStore[roomName].isPublic,
+		});
+
+		const currentMessage = messageList({
+			user: socket.data.nickname,
+			room: roomName,
+			message: "publicToggle",
+			value: timerStore[roomName].isPublic ? "public" : "private",
+		});
+
+		await writeMessageToDb({
+			roomName,
+			message: currentMessage,
+			userName: socket.data.nickname,
+		});
+
+		io.to(roomName).emit("messageLog", {
+			messageLog: currentMessage,
+			date: new Date(),
+		});
+
+		console.log(
+			currentMessage,
+			`User ${socket.data.nickname} changed room ${roomName} to ${
+				timerStore[roomName].isPublic ? "public" : "private"
+			}`
+		);
+	});
 
 	// eslint-disable-next-line no-shadow
 	socket.on("updateTitle", async ({ roomName, title }) => {

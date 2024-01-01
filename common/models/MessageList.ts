@@ -57,6 +57,9 @@ const messageList = ({
 				altValue ? `at ${altValue} min` : ""
 			}`;
 
+		case "publictoggle":
+			return `${user} made the room ${value}`;
+
 		case "addedtimer":
 			return `${user} added a ${value ? `${value} min` : ""} timer`;
 
