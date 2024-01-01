@@ -293,12 +293,6 @@ io.on("connection", async (socket) => {
 				})),
 			});
 
-			// emit the updated number of users in the room
-			// io.to(roomName).emit("usersInRoom", {
-			// 	numUsers: timerStore[roomName].users.length,
-			// 	userList: timerStore[roomName].users,
-			// });
-
 			socket.emit("updatedTitle", {
 				title: timerStore[roomName].isBreak
 					? timerStore[roomName].timerTitle.breakTitle
