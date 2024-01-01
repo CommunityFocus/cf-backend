@@ -145,8 +145,25 @@ io.on("connection", async (socket) => {
 
 	// eslint-disable-next-line no-shadow
 	socket.on("join", async ({ roomName, userName }: EmitJoinEventArgs) => {
-		// join the room
-		socket.join(roomName);
+		if (roomName === "admin") {
+			try {
+				const response = await socket
+					.timeout(5000)
+					.emitWithAck("require-admin-auth");
+				if (
+					response.password &&
+					response.password === process.env.ADMIN_PASSWORD
+				) {
+					socket.join("admin");
+				}
+			} catch (e: unknown) {
+				console.log("Admin auth failed", e);
+			}
+		} else {
+			// join the room
+			socket.join(roomName);
+		}
+
 		// eslint-disable-next-line no-param-reassign
 		socket.data.nickname =
 			userName === "defaultUser" ? socket.id : userName;
@@ -297,7 +314,7 @@ io.on("connection", async (socket) => {
 				statRooms.includes(roomName))
 		) {
 			// emit the updated number of users in the room
-			sendUserCount(io, roomName, timerStore);
+			sendUserCount({ io, roomName, timerStore });
 		}
 	});
 
@@ -348,7 +365,7 @@ io.on("connection", async (socket) => {
 				statRooms.includes(roomName))
 		) {
 			// emit the updated number of users in the room
-			sendUserCount(io, roomName, timerStore);
+			sendUserCount({ io, roomName, timerStore });
 		}
 	});
 
@@ -391,7 +408,7 @@ io.on("connection", async (socket) => {
 						destroyTimer({ roomName, timerStore });
 
 						// emit the updated number of users in the room
-						sendUserCount(io, roomName, timerStore);
+						sendUserCount({ io, roomName, timerStore });
 					},
 					120000 // give the users 2 minutes to rejoin
 				);
@@ -404,7 +421,7 @@ io.on("connection", async (socket) => {
 				statRooms.includes(roomName))
 		) {
 			// emit the updated number of users in the room
-			sendUserCount(io, roomName, timerStore);
+			sendUserCount({ io, roomName, timerStore });
 		}
 
 		io.emit("globalUsers", { globalUsersCount: io.engine.clientsCount });
@@ -735,8 +752,7 @@ io.on("connection", async (socket) => {
 		});
 
 		// emit the updated number of users in the room
-		sendUserCount(io, roomName, timerStore);
-
+		sendUserCount({ io, roomName, timerStore });
 		await writeToDb({
 			roomName,
 			isPublic: timerStore[roomName].isPublic,

@@ -8,25 +8,28 @@ import {
 import { TimerStore } from "../common/types/types";
 import { frontendRouteRooms } from "../common/common";
 
-export default (
+interface ISendUserCount {
 	io: Server<
 		ClientToServerEvents,
 		ServerToClientEvents,
 		InterServerEvents,
 		SocketData
-	>,
-	roomName: string,
-	timerStore: TimerStore
-): void => {
+	>;
+	roomName: string;
+	timerStore: TimerStore;
+}
+
+export default ({ io, roomName, timerStore }: ISendUserCount): void => {
 	// emit the updated number of users in the room
 	io.to(roomName).emit("usersInRoom", {
 		numUsers: timerStore[roomName].users.length,
 		userList: timerStore[roomName].users,
 	});
 
-	io.to("admin").emit("publicTimers", {
+	io.to("public-timers").emit("publicTimers", {
 		roomStats: Object.keys(timerStore)
 			.filter((x) => !frontendRouteRooms.includes(x))
+			.filter((x) => timerStore[x].isPublic)
 			.sort(
 				(a, b) =>
 					timerStore[b].users.length - timerStore[a].users.length
@@ -38,10 +41,9 @@ export default (
 			})),
 	});
 
-	io.to("public-timers").emit("publicTimers", {
+	io.to("admin").emit("publicTimers", {
 		roomStats: Object.keys(timerStore)
 			.filter((x) => !frontendRouteRooms.includes(x))
-			.filter((x) => timerStore[x].isPublic)
 			.sort(
 				(a, b) =>
 					timerStore[b].users.length - timerStore[a].users.length

@@ -60,6 +60,12 @@ export interface ServerToClientEvents {
 	updatedTitle: (data: { title: string }) => void;
 	endTimer: (data: { isBreakMode: boolean }) => void;
 	togglePublicUpdate: (data: { isPublic: boolean }) => void;
+	"require-admin-auth": (
+		callback: (
+			err: Error | undefined,
+			response: { password: string } | undefined
+		) => void
+	) => void;
 }
 
 // socket.on
