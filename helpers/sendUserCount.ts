@@ -22,8 +22,8 @@ interface ISendUserCount {
 export default ({ io, roomName, timerStore }: ISendUserCount): void => {
 	// emit the updated number of users in the room
 	io.to(roomName).emit("usersInRoom", {
-		numUsers: timerStore[roomName].users.length,
-		userList: timerStore[roomName].users,
+		numUsers: timerStore[roomName]?.users?.length,
+		userList: timerStore[roomName]?.users,
 	});
 
 	io.to("public-timers").emit("publicTimers", {
