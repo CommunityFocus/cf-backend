@@ -54,6 +54,11 @@ describe("apiController", () => {
 					heartbeatCounter: 0,
 					isBreak: false,
 					isTimerRunning: false,
+					timerTitle: {
+						workTitle: "work",
+						breakTitle: "break",
+					},
+					isPublic: false,
 				},
 				"second-room-name": {
 					users: [],
@@ -68,6 +73,11 @@ describe("apiController", () => {
 					heartbeatCounter: 0,
 					isBreak: false,
 					isTimerRunning: false,
+					timerTitle: {
+						workTitle: "work",
+						breakTitle: "break",
+					},
+					isPublic: false,
 				},
 			};
 
@@ -107,6 +117,11 @@ describe("apiController", () => {
 					heartbeatCounter: 0,
 					isBreak: false,
 					isTimerRunning: false,
+					timerTitle: {
+						workTitle: "work",
+						breakTitle: "break",
+					},
+					isPublic: false,
 				},
 			};
 			generateSlugMock.mockReturnValue("test");

@@ -57,11 +57,17 @@ const messageList = ({
 				altValue ? `at ${altValue} min` : ""
 			}`;
 
+		case "publictoggle":
+			return `${user} made the room ${value}`;
+
 		case "addedtimer":
 			return `${user} added a ${value ? `${value} min` : ""} timer`;
 
 		case "removedtimer":
 			return `${user} removed a ${value ? `${value} min` : ""} timer`;
+
+		case "changedtitle":
+			return `${user} changed the title to ${value} for ${altValue} session`;
 		default:
 			return `${user} triggered an event in ${room}`;
 	}

@@ -49,6 +49,14 @@ const timerSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
+	workTitle: {
+		type: String,
+		required: true,
+	},
+	breakTitle: {
+		type: String,
+		required: true,
+	},
 	createdAt: {
 		type: Date,
 		required: true,
@@ -61,6 +69,11 @@ const timerSchema = new mongoose.Schema({
 	messageHistory: {
 		type: [messageSchema],
 		required: false,
+	},
+	isPublic: {
+		type: Boolean,
+		required: true,
+		default: false,
 	},
 });
 
