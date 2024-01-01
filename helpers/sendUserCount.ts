@@ -38,6 +38,7 @@ export default ({ io, roomName, timerStore }: ISendUserCount): void => {
 				room,
 				numUsers: timerStore[room].users.length,
 				userList: timerStore[room].users,
+				isPublic: timerStore[room].isPublic,
 			})),
 	});
 
@@ -52,6 +53,7 @@ export default ({ io, roomName, timerStore }: ISendUserCount): void => {
 				room,
 				numUsers: timerStore[room].users.length,
 				userList: timerStore[room].users,
+				isPublic: timerStore[room].isPublic,
 			})),
 	});
 };
