@@ -156,8 +156,8 @@ io.on("connection", async (socket) => {
 				) {
 					socket.join("admin");
 				}
-			} catch (e: unknown) {
-				console.log("Admin auth failed", e);
+			} catch (err) {
+				console.log("Admin auth failed");
 			}
 		} else {
 			// join the room
