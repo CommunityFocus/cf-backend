@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { slugHandler } from "../controllers/apiController";
+import { contributorsHandler, slugHandler } from "../controllers/apiController";
 
 const router = Router();
+router.get("/getContributors", contributorsHandler);
 router.get("/getSlug", slugHandler);
 
 export default router;

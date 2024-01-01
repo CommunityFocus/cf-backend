@@ -39,7 +39,7 @@ describe("timerRequest", () => {
 		});
 		describe("when timerStore[roomName].secondsRemaining is not a number, or is undefined | null", () => {
 			describe("when timerStore[roomName].secondsRemaining is undefined", () => {
-				it("should log an error", () => {
+				it("should emit a socket event with seconds remaining 0", () => {
 					timerRequest({
 						timerStore: {
 							"room-1": { secondsRemaining: undefined },
@@ -47,11 +47,16 @@ describe("timerRequest", () => {
 						roomName: "room-1",
 						socket: socket as any,
 					});
-					expect(console.error).toHaveBeenCalledTimes(1);
+					expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
+						secondsRemaining: 0,
+						isPaused: undefined,
+						isTimerRunning: undefined,
+						isBreakMode: undefined,
+					});
 				});
 			});
 			describe("when timerStore[roomName].secondsRemaining is null", () => {
-				it("should log an error", () => {
+				it("should emit a socket event with seconds remaining 0", () => {
 					timerRequest({
 						timerStore: {
 							"room-1": { secondsRemaining: null },
@@ -59,11 +64,16 @@ describe("timerRequest", () => {
 						roomName: "room-1",
 						socket: socket as any,
 					});
-					expect(console.error).toHaveBeenCalledTimes(1);
+					expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
+						secondsRemaining: 0,
+						isPaused: undefined,
+						isTimerRunning: undefined,
+						isBreakMode: undefined,
+					});
 				});
 			});
 			describe("when timerStore[roomName].secondsRemaining is not a number", () => {
-				it("should log an error", () => {
+				it("should emit a socket event with seconds remaining 0", () => {
 					timerRequest({
 						timerStore: {
 							"room-1": { secondsRemaining: "not a number" },
@@ -71,7 +81,12 @@ describe("timerRequest", () => {
 						roomName: "room-1",
 						socket: socket as any,
 					});
-					expect(console.error).toHaveBeenCalledTimes(1);
+					expect(socket.emit).toHaveBeenCalledWith("timerResponse", {
+						secondsRemaining: 0,
+						isPaused: undefined,
+						isTimerRunning: undefined,
+						isBreakMode: undefined,
+					});
 				});
 			});
 		});

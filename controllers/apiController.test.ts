@@ -44,20 +44,40 @@ describe("apiController", () => {
 				"first-room-name": {
 					users: [],
 					timer: undefined,
+					timerButtons: {
+						work: [1, 2, 3],
+						break: [4, 5, 6],
+					},
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
 					heartbeatCounter: 0,
 					isBreak: false,
+					isTimerRunning: false,
+					timerTitle: {
+						workTitle: "work",
+						breakTitle: "break",
+					},
+					isPublic: false,
 				},
 				"second-room-name": {
 					users: [],
 					timer: undefined,
+					timerButtons: {
+						work: [1, 2, 3],
+						break: [4, 5, 6],
+					},
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
 					heartbeatCounter: 0,
 					isBreak: false,
+					isTimerRunning: false,
+					timerTitle: {
+						workTitle: "work",
+						breakTitle: "break",
+					},
+					isPublic: false,
 				},
 			};
 
@@ -87,11 +107,21 @@ describe("apiController", () => {
 				test: {
 					users: [],
 					timer: undefined,
+					timerButtons: {
+						work: [1, 2, 3],
+						break: [4, 5, 6],
+					},
 					secondsRemaining: 0,
 					isPaused: false,
 					originalDuration: 0,
 					heartbeatCounter: 0,
 					isBreak: false,
+					isTimerRunning: false,
+					timerTitle: {
+						workTitle: "work",
+						breakTitle: "break",
+					},
+					isPublic: false,
 				},
 			};
 			generateSlugMock.mockReturnValue("test");

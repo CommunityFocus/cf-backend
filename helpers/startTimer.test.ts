@@ -1,6 +1,21 @@
 import startCountdown from "./startTimer";
 import { ioTestType, timerStoreTestType } from "../common/types/test/types";
 
+jest.mock("mongoose", () => {
+	return {
+		Schema: jest.fn().mockImplementation(),
+		model: jest.fn().mockImplementation(() => {
+			return {
+				findOneAndUpdate: jest.fn().mockImplementation(() => {
+					return {
+						exec: jest.fn().mockResolvedValue(null),
+					};
+				}),
+			};
+		}),
+	};
+});
+
 describe("startCountdown", () => {
 	describe("when startCountdown is called", () => {
 		let clearIntervalSpy: jest.SpyInstance;
@@ -155,6 +170,8 @@ describe("startCountdown", () => {
 					expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 						secondsRemaining: 0,
 						isPaused: false,
+						isTimerRunning: false,
+						isBreakMode: undefined,
 					});
 				});
 			});
@@ -211,6 +228,8 @@ describe("startCountdown", () => {
 						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 							secondsRemaining: 100,
 							isPaused: false,
+							isTimerRunning: true,
+							isBreakMode: undefined,
 						});
 
 						// clear the mock call so we can check the next call
@@ -225,6 +244,8 @@ describe("startCountdown", () => {
 						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 							secondsRemaining: 90,
 							isPaused: false,
+							isTimerRunning: true,
+							isBreakMode: undefined,
 						});
 
 						io.emit.mockClear();
@@ -239,6 +260,8 @@ describe("startCountdown", () => {
 						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 							secondsRemaining: 80,
 							isPaused: false,
+							isTimerRunning: true,
+							isBreakMode: undefined,
 						});
 					});
 
@@ -253,6 +276,8 @@ describe("startCountdown", () => {
 						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 							secondsRemaining: 35,
 							isPaused: false,
+							isTimerRunning: true,
+							isBreakMode: undefined,
 						});
 
 						// clear the mock call so we can check the next call
@@ -263,6 +288,8 @@ describe("startCountdown", () => {
 						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 							secondsRemaining: 25,
 							isPaused: false,
+							isTimerRunning: true,
+							isBreakMode: undefined,
 						});
 
 						io.emit.mockClear();
@@ -330,6 +357,8 @@ describe("startCountdown", () => {
 						expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 							secondsRemaining: 10,
 							isPaused: false,
+							isTimerRunning: true,
+							isBreakMode: undefined,
 						});
 					});
 				});
@@ -376,6 +405,8 @@ describe("startCountdown", () => {
 				expect(io.emit).toHaveBeenCalledWith("timerResponse", {
 					secondsRemaining: 10,
 					isPaused: false,
+					isTimerRunning: true,
+					isBreakMode: undefined,
 				});
 			});
 		});
