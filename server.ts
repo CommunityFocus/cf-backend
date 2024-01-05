@@ -10,14 +10,14 @@ import apiRoutes from "./routes/apiRoutes";
 import storeMiddleware from "./middleware/storeMiddleware";
 
 import {
-	ClientToServerEvents,
-	InterServerEvents,
-	ServerToClientEvents,
-	SocketData,
 	EmitStartCountdownArgs,
 	EmitWithRoomNameArgs,
 	EmitWorkBreakTimerArgs,
 	EmitJoinEventArgs,
+	ClientToServerEvents,
+	InterServerEvents,
+	ServerToClientEvents,
+	SocketData,
 } from "./common/types/socket/types";
 import connectDB from "./common/models/connectDB";
 import {
@@ -303,14 +303,6 @@ io.on("connection", async (socket) => {
 			sendUserCount({ io, roomName, timerStore });
 		}
 	});
-
-	// if (!frontendRouteRooms.includes(roomName)) {
-	// 	console.log(
-	// 		`User ${socket.data.nickname || socket.id} connected ${
-	// 			roomName ? `to room ${roomName}` : ""
-	// 		}`
-	// 	);
-	// }
 
 	socket.on("changeUsername", async ({ userName }: { userName: string }) => {
 		if (timerStore[roomName]) {

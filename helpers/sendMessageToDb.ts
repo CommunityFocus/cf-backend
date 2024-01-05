@@ -1,11 +1,5 @@
-import { Server } from "socket.io";
 import { writeMessageToDb } from "../common/models/dbHelpers";
-import {
-	ClientToServerEvents,
-	InterServerEvents,
-	ServerToClientEvents,
-	SocketData,
-} from "../common/types/socket/types";
+import { ServerType } from "../common/types/socket/types";
 
 export default async ({
 	roomName,
@@ -16,12 +10,7 @@ export default async ({
 	roomName: string;
 	message: string;
 	userName: string;
-	io: Server<
-		ClientToServerEvents,
-		ServerToClientEvents,
-		InterServerEvents,
-		SocketData
-	>;
+	io: ServerType;
 }): Promise<void> => {
 	await writeMessageToDb({
 		roomName,
