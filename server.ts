@@ -23,7 +23,6 @@ import connectDB from "./common/models/connectDB";
 import {
 	readFromDb,
 	readMessageFromDb,
-	writeMessageToDb,
 	writeToDb,
 } from "./common/models/dbHelpers";
 import messageList from "./common/models/MessageList";
@@ -31,6 +30,7 @@ import formatTimestamp from "./helpers/formatTimestamp";
 import { frontendRouteRooms, statRooms } from "./common/common";
 import timerStore from "./common/timerStore";
 import sendUserCount from "./helpers/sendUserCount";
+import sendMessageToDb from "./helpers/sendMessageToDb";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -235,15 +235,11 @@ io.on("connection", async (socket) => {
 						message: "created",
 					});
 
-					await writeMessageToDb({
+					await sendMessageToDb({
 						roomName,
 						message: currentMessage,
 						userName,
-					});
-
-					socket.broadcast.to(roomName).emit("messageLog", {
-						messageLog: currentMessage,
-						date: new Date(),
+						io,
 					});
 				}
 			}
@@ -266,15 +262,11 @@ io.on("connection", async (socket) => {
 				message: "joined",
 			});
 
-			await writeMessageToDb({
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
-				userName: socket.data.nickname,
-			});
-
-			socket.broadcast.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				userName,
+				io,
 			});
 
 			// limit to last 50 messages
@@ -341,15 +333,12 @@ io.on("connection", async (socket) => {
 				message: "changedUsername",
 				value: userName,
 			});
-			await writeMessageToDb({
+
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
 				userName,
-			});
-
-			io.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				io,
 			});
 		}
 
@@ -370,15 +359,12 @@ io.on("connection", async (socket) => {
 				room: roomName,
 				message: "left",
 			});
-			await writeMessageToDb({
+
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
 				userName: socket.data.nickname,
-			});
-
-			io.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				io,
 			});
 
 			// remove the user from the room. Remove only the first instance of the user
@@ -453,15 +439,11 @@ io.on("connection", async (socket) => {
 					),
 				});
 
-				await writeMessageToDb({
+				await sendMessageToDb({
 					roomName,
 					message: currentMessage,
 					userName: socket.data.nickname,
-				});
-
-				io.to(roomName).emit("messageLog", {
-					messageLog: currentMessage,
-					date: new Date(),
+					io,
 				});
 
 				startCountdown({
@@ -506,15 +488,11 @@ io.on("connection", async (socket) => {
 			altValue: formatTimestamp(timerStore[roomName].secondsRemaining),
 		});
 
-		await writeMessageToDb({
+		await sendMessageToDb({
 			roomName,
 			message: currentMessage,
 			userName: socket.data.nickname,
-		});
-
-		io.to(roomName).emit("messageLog", {
-			messageLog: currentMessage,
-			date: new Date(),
+			io,
 		});
 
 		startCountdown({
@@ -548,15 +526,12 @@ io.on("connection", async (socket) => {
 					timerStore[roomName].secondsRemaining
 				),
 			});
-			await writeMessageToDb({
+
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
 				userName: socket.data.nickname,
-			});
-
-			io.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				io,
 			});
 
 			startCountdown({
@@ -591,16 +566,11 @@ io.on("connection", async (socket) => {
 				),
 			});
 
-			await writeMessageToDb({
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
-
-				userName: socket.data.nickname,
-			});
-
-			io.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				userName,
+				io,
 			});
 
 			io.to(roomName).emit("updatedTitle", {
@@ -639,15 +609,11 @@ io.on("connection", async (socket) => {
 				),
 			});
 
-			await writeMessageToDb({
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
-				userName: socket.data.nickname,
-			});
-
-			io.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				userName,
+				io,
 			});
 
 			io.to(roomName).emit("updatedTitle", {
@@ -720,15 +686,11 @@ io.on("connection", async (socket) => {
 			}
 
 			if (currentMessage.length > 0) {
-				await writeMessageToDb({
+				await sendMessageToDb({
 					roomName,
 					message: currentMessage,
 					userName: socket.data.nickname,
-				});
-
-				io.to(roomName).emit("messageLog", {
-					messageLog: currentMessage,
-					date: new Date(),
+					io,
 				});
 			}
 		}
@@ -759,15 +721,11 @@ io.on("connection", async (socket) => {
 			value: timerStore[roomName].isPublic ? "public" : "private",
 		});
 
-		await writeMessageToDb({
+		await sendMessageToDb({
 			roomName,
 			message: currentMessage,
 			userName: socket.data.nickname,
-		});
-
-		io.to(roomName).emit("messageLog", {
-			messageLog: currentMessage,
-			date: new Date(),
+			io,
 		});
 
 		console.log(
@@ -814,15 +772,11 @@ io.on("connection", async (socket) => {
 				altValue: timerStore[roomName].isBreak ? "break" : "work",
 			});
 
-			await writeMessageToDb({
+			await sendMessageToDb({
 				roomName,
 				message: currentMessage,
 				userName: socket.data.nickname,
-			});
-
-			io.to(roomName).emit("messageLog", {
-				messageLog: currentMessage,
-				date: new Date(),
+				io,
 			});
 
 			console.log(
