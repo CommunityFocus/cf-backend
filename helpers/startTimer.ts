@@ -1,8 +1,8 @@
 import messageList from "../common/models/MessageList";
-import { writeMessageToDb } from "../common/models/dbHelpers";
 import { ServerType } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
 import formatTimestamp from "./formatTimestamp";
+import sendMessageToDb from "./sendMessageToDb";
 
 interface StartCountdownArgs {
 	roomName: string;
@@ -87,15 +87,11 @@ const startCountdown = async ({
 						altValue: formatTimestamp(durationInSeconds),
 					});
 
-					await writeMessageToDb({
+					await sendMessageToDb({
 						roomName,
 						message: currentMessage,
 						userName: "Anonymous",
-					});
-
-					io.to(roomName).emit("messageLog", {
-						messageLog: currentMessage,
-						date: new Date(),
+						io,
 					});
 				}
 			} else {

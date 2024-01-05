@@ -1,20 +1,9 @@
-import { Server } from "socket.io";
-import {
-	ClientToServerEvents,
-	InterServerEvents,
-	ServerToClientEvents,
-	SocketData,
-} from "../common/types/socket/types";
+import { ServerType } from "../common/types/socket/types";
 import { TimerStore } from "../common/types/types";
 import { frontendRouteRooms } from "../common/common";
 
 interface ISendUserCount {
-	io: Server<
-		ClientToServerEvents,
-		ServerToClientEvents,
-		InterServerEvents,
-		SocketData
-	>;
+	io: ServerType;
 	roomName: string;
 	timerStore: TimerStore;
 }
