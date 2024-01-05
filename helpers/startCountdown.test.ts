@@ -1,4 +1,4 @@
-import startCountdown from "./startTimer";
+import startCountdown from "./startCountdown";
 import { ioTestType, timerStoreTestType } from "../common/types/test/types";
 
 jest.mock("mongoose", () => {
