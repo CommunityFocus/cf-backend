@@ -80,6 +80,11 @@ const startCountdown = async ({
 					io.to(roomName).emit("endTimer", {
 						isBreakMode: !timerStore[roomName].isBreak,
 					});
+					io.to(roomName).emit("updatedTitle", {
+						title: timerStore[roomName].isBreak
+							? timerStore[roomName].timerTitle.breakTitle
+							: timerStore[roomName].timerTitle.workTitle,
+					});
 					const currentMessage = messageList({
 						user: "Anonymous",
 						room: roomName,
