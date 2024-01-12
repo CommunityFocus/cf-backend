@@ -33,7 +33,6 @@ export default ({ io, roomName, timerStore }: ISendUserCount): void => {
 
 	io.to("admin").emit("publicTimers", {
 		roomStats: Object.keys(timerStore)
-			.filter((x) => !frontendRouteRooms.includes(x))
 			.sort(
 				(a, b) =>
 					timerStore[b].users.length - timerStore[a].users.length
