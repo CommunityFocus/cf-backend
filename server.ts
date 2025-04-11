@@ -42,6 +42,7 @@ app.use(
 		origin: [
 			"https://admin.socket.io",
 			"https://communityfocus.app",
+			"https://communityfocus.netlify.app",
 			"http://localhost:5100",
 			/* use regex to match all Netlify deploy preview URLs.
 			 * Example: https://deploy-preview-25--communityfocus.netlify.app/
